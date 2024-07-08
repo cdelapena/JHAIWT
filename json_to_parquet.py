@@ -1,7 +1,6 @@
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-from flask import Flask
 
 # URL for fetching the JSON data
 url = "https://remotive.com/api/remote-jobs"
