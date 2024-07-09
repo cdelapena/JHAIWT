@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
+import os
 
 # URL for fetching the JSON data
 url = "https://remotive.com/api/remote-jobs"
@@ -51,15 +52,17 @@ def json_to_parquet(json_data, parquet_file):
     
     df = pd.DataFrame(data, columns=columns)
     
-    # Save dataframe to Parquet
+    #Save dataframe to Parquet
     try:
         df.to_parquet(parquet_file, index=False)
         print(f"Parquet file '{parquet_file}' created successfully.")
     except Exception as e:
         print(f"Error writing to Parquet file: {e}")
 
-# Fetch JSON data from URL
+#Fetch JSON data from URL
 json_data = get_json_data(url)
 
-# Convert JSON to DataFrame and save as Parquet
-json_to_parquet(json_data, 'remotive_jobs.parquet')
+parquet_file = os.path.join('model_development', 'remotive_jobs.parquet')
+
+#Convert JSON to DataFrame and save as Parquet
+json_to_parquet(json_data, parquet_file)
