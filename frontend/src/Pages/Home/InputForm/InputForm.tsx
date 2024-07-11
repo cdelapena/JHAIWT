@@ -1,26 +1,38 @@
 import React from "react";
 import ReactDOM from "react-dom";
+
+import Button from "@mui/material/Button";
+import TextField, { TextFieldProps } from "@mui/material/TextField";
+import { styled } from "@mui/material/styles";
+
 import { useFormik } from "formik";
 import * as yup from "yup";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+
+import "./InputForm.css";
+
+// schema: https://github.com/jquense/yup?tab=readme-ov-file#stringurlmessage-string--function-schema
 
 const validationSchema = yup.object({
-  email: yup
+  jobIndustry: yup.string().required("Job industry is required"),
+  yearsOfExperience: yup
+    .number()
+    .integer("Please enter a number")
+    .required("Years of experience is required"),
+  city: yup.string().required("City is required"),
+  relevantSkills: yup.string().required("Relevant skills are required"),
+  academicCredentials: yup
     .string()
-    .email("Enter a valid email")
-    .required("Email is required"),
-  password: yup
-    .string()
-    .min(8, "Password should be of minimum 8 characters length")
-    .required("Password is required"),
+    .required("Academic credentials are required"),
 });
 
 const InputForm = () => {
   const formik = useFormik({
     initialValues: {
-      email: "",
-      password: "",
+      jobIndustry: "",
+      yearsOfExperience: "",
+      city: "",
+      relevantSkills: "",
+      academicCredentials: "",
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
@@ -29,30 +41,87 @@ const InputForm = () => {
   });
 
   return (
-    <div>
+    <div className="input-form-container">
       <form onSubmit={formik.handleSubmit}>
         <TextField
-          id="email"
-          name="email"
-          label="Email"
-          value={formik.values.email}
+          id="jobIndustry"
+          className="input-form"
+          name="jobIndustry"
+          label="Job Industry"
+          value={formik.values.jobIndustry}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          error={formik.touched.email && Boolean(formik.errors.email)}
-          helperText={formik.touched.email && formik.errors.email}
+          error={
+            formik.touched.jobIndustry && Boolean(formik.errors.jobIndustry)
+          }
+          helperText={formik.touched.jobIndustry && formik.errors.jobIndustry}
         />
         <TextField
-          id="password"
-          name="password"
-          label="Password"
-          type="password"
-          value={formik.values.password}
+          id="yearsOfExperience"
+          className="input-form"
+          name="yearsOfExperience"
+          label="Years of Experience"
+          value={formik.values.yearsOfExperience}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          error={formik.touched.password && Boolean(formik.errors.password)}
-          helperText={formik.touched.password && formik.errors.password}
+          error={
+            formik.touched.yearsOfExperience &&
+            Boolean(formik.errors.yearsOfExperience)
+          }
+          helperText={
+            formik.touched.yearsOfExperience && formik.errors.yearsOfExperience
+          }
         />
-        <Button color="primary" variant="contained" fullWidth type="submit">
+        <TextField
+          id="city"
+          className="input-form"
+          name="city"
+          label="City"
+          value={formik.values.city}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.city && Boolean(formik.errors.city)}
+          helperText={formik.touched.city && formik.errors.city}
+        />
+        <TextField
+          id="relevantSkills"
+          className="input-form"
+          name="relevantSkills"
+          label="Relevant Skills"
+          value={formik.values.relevantSkills}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={
+            formik.touched.relevantSkills &&
+            Boolean(formik.errors.relevantSkills)
+          }
+          helperText={
+            formik.touched.relevantSkills && formik.errors.relevantSkills
+          }
+        />
+        <TextField
+          id="academicCredentials"
+          className="input-form"
+          name="academicCredentials"
+          label="Academic Credentials"
+          value={formik.values.academicCredentials}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={
+            formik.touched.academicCredentials &&
+            Boolean(formik.errors.academicCredentials)
+          }
+          helperText={
+            formik.touched.academicCredentials && formik.errors.academicCredentials
+          }
+        />
+
+        <Button
+          color="primary"
+          variant="contained"
+          type="submit"
+          sx={{ display: "flex", marginLeft: "auto", marginRight: "auto" }}
+        >
           Submit
         </Button>
       </form>
