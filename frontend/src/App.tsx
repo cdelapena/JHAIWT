@@ -7,15 +7,15 @@ import theme from "./theme";
 const App = () => {
   return (
     <ThemeProvider theme={theme}>
-    <BrowserRouter>
-      <Routes>
-        <Route index path="/" element={<Home />} />
-        <Route path="/path1" element={<Home />} />
-        <Route path="/path2" element={<Home />} />
-      </Routes>
-    </BrowserRouter>
+      <BrowserRouter>
+        <Routes>
+          <Route index path="/" element={<Home />} />
+          <Route path="/path1" element={<Home />} />
+          <Route path="/path2" element={<Home />} />
+        </Routes>
+      </BrowserRouter>
     </ThemeProvider>
   );
 };
 
-export default App
+export default App;
