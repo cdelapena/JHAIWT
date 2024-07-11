@@ -1,9 +1,5 @@
-import React from "react";
-import ReactDOM from "react-dom";
-
 import Button from "@mui/material/Button";
 import TextField, { TextFieldProps } from "@mui/material/TextField";
-import { styled } from "@mui/material/styles";
 
 import { useFormik } from "formik";
 import * as yup from "yup";
@@ -61,6 +57,7 @@ const InputForm = () => {
           className="input-form"
           name="yearsOfExperience"
           label="Years of Experience"
+          type="number"
           value={formik.values.yearsOfExperience}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
