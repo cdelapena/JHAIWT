@@ -1,7 +1,13 @@
-import { FC } from "react";
+import React from "react";
+import InputForm from "./InputForm/InputForm"
 
 const Home = () => {
-  return <>Home page</>;
+  return (
+    <>
+      <h1>Home page</h1>
+      <InputForm />
+    </>
+  );
 };
 
 export default Home;
