@@ -1,5 +1,5 @@
 import Button from "@mui/material/Button";
-import TextField, { TextFieldProps } from "@mui/material/TextField";
+import TextField from "@mui/material/TextField";
 
 import { useFormik } from "formik";
 import * as yup from "yup";
@@ -119,7 +119,7 @@ const InputForm = () => {
           type="submit"
           sx={{ display: "flex", marginLeft: "auto", marginRight: "auto" }}
         >
-          Submit
+          Search
         </Button>
       </form>
     </div>
