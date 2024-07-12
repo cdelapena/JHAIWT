@@ -47,7 +47,7 @@ const InputForm = () => {
   return (
     <div className="input-form-container">
       <form onSubmit={formik.handleSubmit}>
-        <FormControl className="input-form">
+        <FormControl className="input-form" id="jobIndustryFormControl">
           <InputLabel
             id="jobIndustryLabel"
             sx={{ color: formik.errors.jobIndustry ? "#d32f2f" : "" }}
@@ -68,7 +68,9 @@ const InputForm = () => {
             sx={{ textAlign: "left" }}
           >
             {jobs.map((job) => (
-              <MenuItem value={job.slug}>{job.name}</MenuItem>
+              <MenuItem key={job.id.toString()} value={job.slug}>
+                {job.name}
+              </MenuItem>
             ))}
           </Select>
           <FormHelperText sx={{ color: "#d32f2f" }}>
