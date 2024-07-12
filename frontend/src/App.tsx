@@ -1,10 +1,34 @@
+import { FC, useMemo } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Home from "./Pages/Home/Home";
-import "./App.css";
 import { ThemeProvider } from "@mui/material/styles";
-import theme from "./theme";
+import { createTheme, useMediaQuery } from "@mui/material";
 
-const App = () => {
+import "./App.css";
+import Home from "./Pages/Home/Home";
+
+const App: FC = () => {
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: prefersDarkMode ? "dark" : "light",
+        },
+        typography: {
+          button: {
+            textTransform: "none",
+          },
+        },
+      }),
+    [prefersDarkMode]
+  );
+
+  document.documentElement.style.setProperty(
+    "--background-color",
+    theme.palette.mode === "light" ? "white" : "black"
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <BrowserRouter>

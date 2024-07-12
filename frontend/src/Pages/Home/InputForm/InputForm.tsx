@@ -1,10 +1,18 @@
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import {
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
 
 import { useFormik } from "formik";
 import * as yup from "yup";
 
 import "./InputForm.css";
+import { jobs } from "./InputFormHelper";
 
 // schema: https://github.com/jquense/yup?tab=readme-ov-file#stringurlmessage-string--function-schema
 
@@ -39,19 +47,36 @@ const InputForm = () => {
   return (
     <div className="input-form-container">
       <form onSubmit={formik.handleSubmit}>
-        <TextField
-          id="jobIndustry"
-          className="input-form"
-          name="jobIndustry"
-          label="Job Industry"
-          value={formik.values.jobIndustry}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          error={
-            formik.touched.jobIndustry && Boolean(formik.errors.jobIndustry)
-          }
-          helperText={formik.touched.jobIndustry && formik.errors.jobIndustry}
-        />
+        <FormControl className="input-form" id="jobIndustryFormControl">
+          <InputLabel
+            id="jobIndustryLabel"
+            sx={{ color: formik.errors.jobIndustry ? "#d32f2f" : "" }}
+          >
+            Job Industry
+          </InputLabel>
+          <Select
+            name="jobIndustry"
+            labelId="jobIndustryLabel"
+            id="jobIndustrySelect"
+            value={formik.values.jobIndustry}
+            label="Job Industry"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={
+              formik.touched.jobIndustry && Boolean(formik.errors.jobIndustry)
+            }
+            sx={{ textAlign: "left" }}
+          >
+            {jobs.map((job) => (
+              <MenuItem key={job.id.toString()} value={job.slug}>
+                {job.name}
+              </MenuItem>
+            ))}
+          </Select>
+          <FormHelperText sx={{ color: "#d32f2f" }}>
+            {formik.touched.jobIndustry && formik.errors.jobIndustry}
+          </FormHelperText>
+        </FormControl>
         <TextField
           id="yearsOfExperience"
           className="input-form"
@@ -109,12 +134,14 @@ const InputForm = () => {
             Boolean(formik.errors.academicCredentials)
           }
           helperText={
-            formik.touched.academicCredentials && formik.errors.academicCredentials
+            formik.touched.academicCredentials &&
+            formik.errors.academicCredentials
           }
         />
 
         <Button
           color="primary"
+          disabled={!formik.dirty}
           variant="contained"
           type="submit"
           sx={{ display: "flex", marginLeft: "auto", marginRight: "auto" }}
