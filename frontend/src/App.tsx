@@ -1,10 +1,12 @@
+import { FC } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Home from "./Pages/Home/Home";
-import "./App.css";
 import { ThemeProvider } from "@mui/material/styles";
+
+import "./App.css";
+import Home from "./Pages/Home/Home";
 import theme from "./theme";
 
-const App = () => {
+const App: FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <BrowserRouter>
