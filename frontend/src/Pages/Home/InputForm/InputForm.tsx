@@ -17,7 +17,7 @@ import { jobs } from "./InputFormHelper";
 // schema: https://github.com/jquense/yup?tab=readme-ov-file#stringurlmessage-string--function-schema
 
 const validationSchema = yup.object({
-  jobIndustry: yup.string().required("Job industry is required"),
+  industryCategory: yup.string().required("Industry Category is required"),
   yearsOfExperience: yup
     .number()
     .integer("Please enter a number")
@@ -32,7 +32,7 @@ const validationSchema = yup.object({
 const InputForm = () => {
   const formik = useFormik({
     initialValues: {
-      jobIndustry: "",
+      industryCategory: "",
       yearsOfExperience: "",
       city: "",
       relevantSkills: "",
@@ -47,23 +47,23 @@ const InputForm = () => {
   return (
     <div className="input-form-container">
       <form onSubmit={formik.handleSubmit}>
-        <FormControl className="input-form" id="jobIndustryFormControl">
+        <FormControl className="input-form" id="industryCategoryFormControl">
           <InputLabel
-            id="jobIndustryLabel"
-            sx={{ color: formik.errors.jobIndustry ? "#d32f2f" : "" }}
+            id="industryCategoryLabel"
+            sx={{ color: formik.values.industryCategory === "" && formik.touched.industryCategory ? "#d32f2f" : "" }}
           >
-            Job Industry
+            Industry Category
           </InputLabel>
           <Select
-            name="jobIndustry"
-            labelId="jobIndustryLabel"
-            id="jobIndustrySelect"
-            value={formik.values.jobIndustry}
+            name="industryCategory"
+            labelId="industryCategoryLabel"
+            id="industryCategorySelect"
+            value={formik.values.industryCategory}
             label="Job Industry"
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             error={
-              formik.touched.jobIndustry && Boolean(formik.errors.jobIndustry)
+              formik.touched.industryCategory && Boolean(formik.errors.industryCategory)
             }
             sx={{ textAlign: "left" }}
           >
@@ -74,7 +74,7 @@ const InputForm = () => {
             ))}
           </Select>
           <FormHelperText sx={{ color: "#d32f2f" }}>
-            {formik.touched.jobIndustry && formik.errors.jobIndustry}
+            {formik.touched.industryCategory && formik.errors.industryCategory}
           </FormHelperText>
         </FormControl>
         <TextField
