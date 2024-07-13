@@ -50,7 +50,7 @@ const InputForm = () => {
         <FormControl className="input-form" id="jobIndustryFormControl">
           <InputLabel
             id="jobIndustryLabel"
-            sx={{ color: formik.errors.jobIndustry ? "#d32f2f" : "" }}
+            sx={{ color: formik.values.jobIndustry === "" && formik.touched.jobIndustry ? "#d32f2f" : "" }}
           >
             Job Industry
           </InputLabel>
