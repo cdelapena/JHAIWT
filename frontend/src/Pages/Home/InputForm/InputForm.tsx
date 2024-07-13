@@ -17,7 +17,7 @@ import { jobs } from "./InputFormHelper";
 // schema: https://github.com/jquense/yup?tab=readme-ov-file#stringurlmessage-string--function-schema
 
 const validationSchema = yup.object({
-  industryCategory: yup.string().required("Job industry is required"),
+  industryCategory: yup.string().required("Industry Category is required"),
   yearsOfExperience: yup
     .number()
     .integer("Please enter a number")
