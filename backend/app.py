@@ -1,11 +1,11 @@
-from get_remotive_jobs import return_clean_json_data
+from fetch_external_data import get_request
 from flask import Flask
 
 app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
 def home():
-    response = return_clean_json_data()
+    response = get_request("remotive", "https://remotive.com/api/remote-jobs")
     return {"message": response}, 200
 
 
