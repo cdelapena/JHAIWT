@@ -1,18 +1,23 @@
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import {
+  Button,
   FormControl,
+  FormControlLabel,
   FormHelperText,
+  FormLabel,
   InputLabel,
   MenuItem,
+  Radio,
+  RadioGroup,
   Select,
+  TextField,
+  useTheme,
 } from "@mui/material";
 
 import { useFormik } from "formik";
 import * as yup from "yup";
 
 import "./InputForm.css";
-import { jobs } from "./InputFormHelper";
+import { NumberOfSearchResultsOptions, jobs } from "./InputFormHelper";
 
 // schema: https://github.com/jquense/yup?tab=readme-ov-file#stringurlmessage-string--function-schema
 
@@ -27,9 +32,14 @@ const validationSchema = yup.object({
   academicCredentials: yup
     .string()
     .required("Academic credentials are required"),
+  numberOfSearchResults: yup
+    .number()
+    .required("Number of Search Results is required"),
 });
 
 const InputForm = () => {
+  const theme = useTheme();
+
   const formik = useFormik({
     initialValues: {
       industryCategory: "",
@@ -37,6 +47,7 @@ const InputForm = () => {
       city: "",
       relevantSkills: "",
       academicCredentials: "",
+      numberOfSearchResults: NumberOfSearchResultsOptions.Option1,
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
@@ -50,7 +61,13 @@ const InputForm = () => {
         <FormControl className="input-form" id="industryCategoryFormControl">
           <InputLabel
             id="industryCategoryLabel"
-            sx={{ color: formik.values.industryCategory === "" && formik.touched.industryCategory ? "#d32f2f" : "" }}
+            sx={{
+              color:
+                formik.values.industryCategory === "" &&
+                formik.touched.industryCategory
+                  ? "#d32f2f"
+                  : "",
+            }}
           >
             Industry Category
           </InputLabel>
@@ -59,11 +76,12 @@ const InputForm = () => {
             labelId="industryCategoryLabel"
             id="industryCategorySelect"
             value={formik.values.industryCategory}
-            label="Job Industry"
+            label="Industry Category"
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             error={
-              formik.touched.industryCategory && Boolean(formik.errors.industryCategory)
+              formik.touched.industryCategory &&
+              Boolean(formik.errors.industryCategory)
             }
             sx={{ textAlign: "left" }}
           >
@@ -138,6 +156,41 @@ const InputForm = () => {
             formik.errors.academicCredentials
           }
         />
+
+        <FormControl component="fieldset" className="input-form">
+          <FormLabel component="legend">Number of Search Results</FormLabel>
+          <RadioGroup
+            row
+            id="numberOfSearchResults"
+            name="numberOfSearchResults"
+            sx={{ justifyContent: "center" }}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.numberOfSearchResults}
+          >
+            <FormControlLabel
+              name="numberOfSearchResults"
+              value={NumberOfSearchResultsOptions.Option1}
+              control={<Radio />}
+              label="5"
+              sx={{ color: theme.palette.mode === "dark" ? "white" : "" }}
+            />
+            <FormControlLabel
+              name="numberOfSearchResults"
+              value={NumberOfSearchResultsOptions.Option2}
+              control={<Radio />}
+              label="10"
+              sx={{ color: theme.palette.mode === "dark" ? "white" : "" }}
+            />
+            <FormControlLabel
+              name="numberOfSearchResults"
+              value={NumberOfSearchResultsOptions.Option3}
+              control={<Radio />}
+              label="15"
+              sx={{ color: theme.palette.mode === "dark" ? "white" : "" }}
+            />
+          </RadioGroup>
+        </FormControl>
 
         <Button
           color="primary"

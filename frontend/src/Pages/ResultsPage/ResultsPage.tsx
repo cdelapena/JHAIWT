@@ -2,10 +2,7 @@ import { FC } from "react";
 
 import { useTheme } from "@mui/material";
 
-import InputForm from "./InputForm/InputForm";
-import "./Home.css";
-
-const Home: FC = () => {
+const ResultsPage: FC = () => {
   const theme = useTheme();
 
   return (
@@ -16,10 +13,8 @@ const Home: FC = () => {
       >
         Job Hunting AI Web Tool
       </h1>
-      <br />
-      <InputForm />
     </>
   );
 };
 
-export default Home;
+export default ResultsPage;
