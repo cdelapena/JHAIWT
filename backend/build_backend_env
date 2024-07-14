@@ -20,18 +20,6 @@ create_venv() {
     fi
 }
 
-# Function to activate the virtual environment
-activate_venv() {
-    local env_name=${1:-".venv"}
-    if [ -d "$env_name" ]; then
-        echo "Activating virtual environment '$env_name'..."
-        source "./$env_name/bin/activate"
-        echo "Virtual environment activated."
-    else
-        echo "Virtual environment '$env_name' not found."
-    fi
-}
-
 # Function to install dependencies from requirements.txt
 install_deps() {
     local env_name=${1:-".venv"}
@@ -48,5 +36,4 @@ install_deps() {
 # Main execution flow
 check_virtualenv
 create_venv
-activate_venv
 install_deps
