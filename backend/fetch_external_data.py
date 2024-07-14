@@ -23,6 +23,37 @@ def get_request(src: str, url: str) -> Dict:
         raise
 
 
+# Returning clean JSON from Remotive API
+def return_clean_json_data(src: str , url: str) -> str:
+    """TEMPORARY: Fetches and cleans the json body from remotive.com
+
+    Args:
+        src (str): source name i.e. remotive
+        url (str): active API url
+    """
+    def strip_html_tags_and_decode(text: Dict) -> str:
+        """Helper function to clean the response body.
+
+        Args:
+            text (Dict): response body as Python dictionary
+
+        Returns:
+            str: cleaned string of json body
+        """
+        soup = BeautifulSoup(text, "html.parser")
+        return (
+            soup.get_text(separator=" ", strip=True)
+            .encode("ascii", "ignore")
+            .decode("utf-8")
+        )
+
+    json_data = get_request(src, url)
+    jobs = json_data.get("jobs", [])
+    for job in jobs:
+        job["description"] = strip_html_tags_and_decode(job.get("description", ""))
+    return jobs
+
+
 def fetch_external_data(api_sources: Path) -> pd.DataFrame:
     """Opens the api_sources data file and iteratively fetches
     results from the API.
