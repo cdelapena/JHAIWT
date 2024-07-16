@@ -1,0 +1,6 @@
+.input-form {
+    text-align: center;
+    width: 20rem;
+    display: flex !important;
+    margin: 1rem auto !important;
+}
