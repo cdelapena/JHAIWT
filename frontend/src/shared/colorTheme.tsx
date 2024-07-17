@@ -26,9 +26,4 @@ export const getDesignTokens = (mode: PaletteMode) => ({
           },
         }),
   },
-  typography: {
-    button: {
-      textTransform: "none",
-    },
-  },
 });

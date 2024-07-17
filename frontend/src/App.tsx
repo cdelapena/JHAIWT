@@ -34,7 +34,6 @@ const App: FC = () => {
     }
   }, [mode]);
 
-  //@ts-ignore
   const theme = useMemo(() => createTheme(getDesignTokens(mode)), [mode]);
 
   return (
