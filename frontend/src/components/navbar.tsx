@@ -6,12 +6,24 @@ const Navbar: React.FC = () => {
   return (
     <AppBar position="static">
       <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography 
+          variant="h6" 
+          component={RouterLink} 
+          to="/" 
+          sx={{ 
+            flexGrow: 1, 
+            textDecoration: 'none', 
+            color: 'inherit',
+            '&:hover': {
+              color: 'secondary.main',
+            },
+          }}
+        >
           Job Hunting AI Web Tool
         </Typography>
         <Box>
-          <Button color="inherit" component={RouterLink} to="/">
-            Home
+          <Button color="inherit" component={RouterLink} to="/browse">
+            Browse All
           </Button>
           <Button color="inherit" component={RouterLink} to="/features">
             Features
