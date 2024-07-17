@@ -7,7 +7,7 @@ import "./App.css";
 import { ThemeContext } from "./shared/contexts";
 import Home from "./Pages/Home/Home";
 import ResultsPage from "./Pages/ResultsPage/ResultsPage";
-import { getDesignTokens } from "./shared/helpers";
+import { getDesignTokens } from "./shared/colorTheme";
 
 const App: FC = () => {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -34,6 +34,7 @@ const App: FC = () => {
     }
   }, [mode]);
 
+  //@ts-ignore
   const theme = useMemo(() => createTheme(getDesignTokens(mode)), [mode]);
 
   return (

@@ -11,5 +11,4 @@ export interface JobInterface {
   candidate_required_location: string;
   salary: string;
   description: string;
-  job: string;
 }

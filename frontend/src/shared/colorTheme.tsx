@@ -1,5 +1,5 @@
 import { PaletteMode } from "@mui/material";
-import { amber, deepOrange, grey } from "@mui/material/colors";
+import { blue, grey, indigo } from "@mui/material/colors";
 
 export const getDesignTokens = (mode: PaletteMode) => ({
   palette: {
@@ -7,21 +7,28 @@ export const getDesignTokens = (mode: PaletteMode) => ({
     ...(mode === "light"
       ? {
           // palette values for light mode
+          background: { paper: blue[100] },
           text: {
             primary: grey[900],
-            secondary: grey[900],
+            secondary: grey[700],
           },
         }
       : {
           // palette values for dark mode
-          main: grey[900],
+          main: indigo[600],
           background: {
             default: grey[900],
+            paper: grey[800],
           },
           text: {
             primary: "#fff",
-            secondary: grey[500],
+            secondary: grey[200],
           },
         }),
+  },
+  typography: {
+    button: {
+      textTransform: "none",
+    },
   },
 });

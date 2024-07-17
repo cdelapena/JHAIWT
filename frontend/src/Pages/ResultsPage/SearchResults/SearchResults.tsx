@@ -1,18 +1,18 @@
 import { FC } from "react";
 
-import { useTheme } from "@mui/material";
-
 import SingleResult from "./SingleResult/SingleResult";
+import { sampleJsonResponse } from "../../../shared/constants";
+import { JobInterface } from "../../../shared/interfaces";
+
+import "./SearchResults.css";
 
 const SearchResults: FC = () => {
-  const theme = useTheme();
-
   return (
-    <>
-      <h1 className="title" style={{color: theme.palette.mode === "dark" ? "white" : ""}}>
-        <SingleResult job="hello"></SingleResult>
-      </h1>
-    </>
+    <div className="search-results-container">
+      {sampleJsonResponse.jobs.map((job: JobInterface) => {
+        return <SingleResult job={job} key={job.id}></SingleResult>;
+      })}
+    </div>
   );
 };
 

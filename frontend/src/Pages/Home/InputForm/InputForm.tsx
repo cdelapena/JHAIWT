@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 import {
   Button,
   FormControl,
@@ -10,7 +12,6 @@ import {
   RadioGroup,
   Select,
   TextField,
-  useTheme,
 } from "@mui/material";
 
 import { useFormik } from "formik";
@@ -38,7 +39,7 @@ const validationSchema = yup.object({
 });
 
 const InputForm = () => {
-  const theme = useTheme();
+  const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
@@ -52,6 +53,7 @@ const InputForm = () => {
     validationSchema: validationSchema,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));
+      navigate("/results");
     },
   });
 
@@ -173,21 +175,18 @@ const InputForm = () => {
               value={NumberOfSearchResultsOptions.Option1}
               control={<Radio />}
               label="5"
-              sx={{ color: theme.palette.mode === "dark" ? "white" : "" }}
             />
             <FormControlLabel
               name="numberOfSearchResults"
               value={NumberOfSearchResultsOptions.Option2}
               control={<Radio />}
               label="10"
-              sx={{ color: theme.palette.mode === "dark" ? "white" : "" }}
             />
             <FormControlLabel
               name="numberOfSearchResults"
               value={NumberOfSearchResultsOptions.Option3}
               control={<Radio />}
               label="15"
-              sx={{ color: theme.palette.mode === "dark" ? "white" : "" }}
             />
           </RadioGroup>
         </FormControl>
