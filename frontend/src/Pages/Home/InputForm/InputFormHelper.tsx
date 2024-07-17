@@ -77,3 +77,9 @@ export const jobs: Job[] = [
     slug: "all-others",
   },
 ];
+
+export enum NumberOfSearchResultsOptions {
+  Option1 = 5,
+  Option2 = 10,
+  Option3 = 15,
+}
