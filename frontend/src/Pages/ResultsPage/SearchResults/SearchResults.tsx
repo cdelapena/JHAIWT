@@ -1,8 +1,8 @@
 import { FC } from "react";
 
 import SingleResult from "./SingleResult/SingleResult";
-import { sampleJsonResponse } from "../../../shared/constants";
-import { JobInterface } from "../../../shared/interfaces";
+import { sampleJsonResponse } from "../../../shared/Constants";
+import { JobInterface } from "../../../shared/Interfaces";
 
 import "./SearchResults.css";
 

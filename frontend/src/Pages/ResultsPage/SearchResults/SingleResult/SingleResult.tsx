@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import { JobInterface } from "../../../../shared/interfaces";
+import { JobInterface } from "../../../../shared/Interfaces";
 
 interface ResultProps {
   job: JobInterface;
