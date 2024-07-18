@@ -9,7 +9,7 @@ idna==3.7
 itsdangerous==2.2.0
 Jinja2==3.1.4
 MarkupSafe==2.1.5
-numpy==2.0.0
+numpy==1.23.5			# Revised for compatibility with spacy and thinc
 pandas==2.2.2
 pyarrow==16.1.0
 python-dateutil==2.9.0.post0
