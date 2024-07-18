@@ -1,6 +1,4 @@
-import numpy as np
 import pandas as pd
-import re
 import nltk  # Natural Language Toolkit
 import spacy  # NLP library in Python
 import string
@@ -28,17 +26,20 @@ def remove_stopwords(text: str) -> str:
     return ' '.join([word for word in text.split() if word.lower() not in STOPWORDS])
 
 def preprocess_text(data) -> list:
-    # Check if the input is a list and convert it to a DataFrame
+    """
+    RETURNS: Preprocessed text data with stopwords and punctuation removed.
+    """
     if isinstance(data, list):
         df = pd.DataFrame(data)
     else:
         df = data
 
+    # Create intermediate columns for temp storage
     df['description_lower'] = df['description'].str.lower()
     df['description_wo_punct'] = df['description_lower'].apply(remove_punctuation)
     df['description_clean'] = df['description_wo_punct'].apply(remove_stopwords)
     
-    # Dropping intermediate columns
+    # Remove intermediate columns
     df.drop(['description_lower', 'description_wo_punct'], axis=1, inplace=True)
     
     # Renaming the final cleaned column to 'description'
