@@ -27,7 +27,10 @@ def remove_stopwords(text: str) -> str:
 
 def preprocess_text(data) -> list:
     """
-    RETURNS: Preprocessed text data with stopwords and punctuation removed.
+    RETURNS: Preprocessed text data as-follows:
+        - Stopwords removed
+        - Lowercased
+        - Punctuation removed
     """
     if isinstance(data, list):
         df = pd.DataFrame(data)
