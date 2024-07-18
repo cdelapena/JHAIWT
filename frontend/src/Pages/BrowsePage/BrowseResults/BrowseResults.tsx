@@ -13,7 +13,7 @@ import {
   TablePagination,
   TableSortLabel,
 } from "@mui/material";
-import { JobInterface } from "../../shared/Interfaces";
+import { JobInterface } from "../../../shared/interfaces";
 import "./BrowseResults.css";
 
 type Order = 'asc' | 'desc';
@@ -97,7 +97,7 @@ const BrowseResults: FC = () => {
                     direction={orderBy === column ? order : 'asc'}
                     onClick={handleSort(column as keyof JobInterface)}
                   >
-                    {column.replace('_', ' ').toUpperCase()}
+                    {column.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                   </TableSortLabel>
                 </TableCell>
               ))}
