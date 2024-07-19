@@ -1,11 +1,8 @@
+
 import { FC } from "react";
 
 import SingleResult from "./SingleResult/SingleResult";
-<<<<<<< HEAD
 import { sampleJsonResponse } from "../../../shared/constants";
-=======
-import { sampleJsonResponse } from "../../../shared/Constants";
->>>>>>> b384ea4 (Update SearchResults and SingleResult components)
 import { JobInterface } from "../../../shared/interfaces";
 
 import "./SearchResults.css";
