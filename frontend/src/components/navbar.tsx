@@ -8,18 +8,28 @@ const Navbar: React.FC = () => {
       <Toolbar>
         <Typography 
           variant="h6" 
-          component={RouterLink} 
-          to="/" 
+          component="div"
           sx={{ 
-            flexGrow: 1, 
             textDecoration: 'none', 
             color: 'inherit',
-            '&:hover': {
-              color: 'secondary.main',
-            },
           }}
         >
-          Job Hunting AI Web Tool
+          <RouterLink 
+            to="/" 
+            style={{ 
+              textDecoration: 'none', 
+              color: 'inherit',
+            }}
+          >
+            <span style={{ 
+              display: 'inline-block',
+              '&:hover': {
+                color: 'secondary.main',
+              },
+            }}>
+              Job Hunting AI Web Tool
+            </span>
+          </RouterLink>
         </Typography>
         <Box>
           <Button color="inherit" component={RouterLink} to="/browse">

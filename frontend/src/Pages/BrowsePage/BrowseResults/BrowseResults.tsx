@@ -14,9 +14,19 @@ import {
   TableSortLabel,
 } from "@mui/material";
 import { JobInterface } from "../../../shared/interfaces";
+import { sampleJsonResponse } from "../../../shared/constants"; // Import the mock data
 import "./BrowseResults.css";
 
 type Order = 'asc' | 'desc';
+
+const columnWidths = {
+  title: '25%',
+  company_name: '20%',
+  candidate_required_location: '20%',
+  category: '15%',
+  salary: '10%',
+  action: '10%'
+};
 
 const BrowseResults: FC = () => {
   const [jobs, setJobs] = useState<JobInterface[]>([]);
@@ -28,20 +38,18 @@ const BrowseResults: FC = () => {
   const [order, setOrder] = useState<Order>('asc');
 
   useEffect(() => {
+    // Use the mock data instead of fetching from the API
     const fetchJobs = async () => {
       try {
         setLoading(true);
-        const response = await fetch('https://remotive.com/api/remote-jobs?limit=100');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setJobs(data.jobs);
+        // Simulate an API call delay
+        setTimeout(() => {
+          setJobs(sampleJsonResponse.jobs); // Set jobs from the mock data
+          setLoading(false);
+        }, 1000);
       } catch (error) {
         console.error('Error fetching jobs:', error);
         setError('Failed to fetch jobs. Please try again later.');
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -86,12 +94,12 @@ const BrowseResults: FC = () => {
 
   return (
     <Paper className="browse-results-container">
-      <TableContainer>
-        <Table>
+      <TableContainer style={{ height: '400px', overflow: 'auto' }}>
+        <Table stickyHeader>
           <TableHead>
             <TableRow>
               {['title', 'company_name', 'candidate_required_location', 'category', 'salary'].map((column) => (
-                <TableCell key={column}>
+                <TableCell key={column} style={{ width: columnWidths[column as keyof typeof columnWidths] }}>
                   <TableSortLabel
                     active={orderBy === column}
                     direction={orderBy === column ? order : 'asc'}
@@ -101,7 +109,7 @@ const BrowseResults: FC = () => {
                   </TableSortLabel>
                 </TableCell>
               ))}
-              <TableCell>ACTION</TableCell>
+              <TableCell style={{ width: columnWidths.action }}>ACTION</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -109,12 +117,12 @@ const BrowseResults: FC = () => {
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((job: JobInterface) => (
                 <TableRow key={job.id}>
-                  <TableCell>{job.title}</TableCell>
-                  <TableCell>{job.company_name}</TableCell>
-                  <TableCell>{job.candidate_required_location}</TableCell>
-                  <TableCell>{job.category}</TableCell>
-                  <TableCell>{job.salary || "Not Listed"}</TableCell>
-                  <TableCell>
+                  <TableCell style={{ width: columnWidths.title }}>{job.title}</TableCell>
+                  <TableCell style={{ width: columnWidths.company_name }}>{job.company_name}</TableCell>
+                  <TableCell style={{ width: columnWidths.candidate_required_location }}>{job.candidate_required_location}</TableCell>
+                  <TableCell style={{ width: columnWidths.category }}>{job.category}</TableCell>
+                  <TableCell style={{ width: columnWidths.salary }}>{job.salary || "Not Listed"}</TableCell>
+                  <TableCell style={{ width: columnWidths.action }}>
                     <Button
                       variant="outlined"
                       size="small"
