@@ -1,29 +1,21 @@
 import pandas as pd
-import nltk  # Natural Language Toolkit
-import spacy  # NLP library in Python
+# import nltk  # Natural Language Toolkit
+# import spacy  # NLP library in Python
 import string
-from nltk.corpus import stopwords
+from reference_text import stopwords
+# from nltk.corpus import stopwords
 
 # Download stopwords if not already downloaded. For stopwords, reference
 # Reference: https://www.kaggle.com/code/sudalairajkumar/getting-started-with-text-preprocessing
-nltk.download('stopwords')
-
-# Download spaCy model if not already downloaded
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    from spacy.cli import download
-    download("en_core_web_sm")
-    nlp = spacy.load("en_core_web_sm")
+# nltk.download('stopwords')
 
 PUNCT_TO_REMOVE = string.punctuation
-STOPWORDS = set(stopwords.words('english'))
 
 def remove_punctuation(text: str) -> str:
     return text.translate(str.maketrans('', '', PUNCT_TO_REMOVE))
 
 def remove_stopwords(text: str) -> str:
-    return ' '.join([word for word in text.split() if word.lower() not in STOPWORDS])
+    return ' '.join([word for word in text.split() if word.lower() not in stopwords])
 
 def preprocess_text(data) -> list:
     """
