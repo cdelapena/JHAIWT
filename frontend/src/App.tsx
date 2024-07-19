@@ -1,27 +1,35 @@
 import { FC, useState, useMemo, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
-import { PaletteMode, createTheme, useMediaQuery, CssBaseline } from "@mui/material";
+import {
+  PaletteMode,
+  createTheme,
+  useMediaQuery,
+  CssBaseline,
+  ThemeOptions,
+} from "@mui/material";
 
 import "./App.css";
 import { ThemeContext } from "./shared/contexts";
 import Home from "./Pages/Home/Home";
 import ResultsPage from "./Pages/ResultsPage/ResultsPage";
-import BrowsePage from "./Pages/BrowsePage/BrowsePage"; 
+import BrowsePage from "./Pages/BrowsePage/BrowsePage";
 import { getDesignTokens } from "./shared/colorTheme";
-import Navbar from './components/navbar';
+import Navbar from "./components/navbar";
 
 const App: FC = () => {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  const [mode, setMode] = useState<PaletteMode>(prefersDarkMode ? 'dark' : 'light');
+  const [mode, setMode] = useState<PaletteMode>(
+    prefersDarkMode ? "dark" : "light"
+  );
 
   const colorMode = useMemo(
     () => ({
       toggleColorMode: () => {
-        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+        setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
       },
     }),
-    [],
+    []
   );
 
   useEffect(() => {
@@ -32,7 +40,10 @@ const App: FC = () => {
     }
   }, [mode]);
 
-  const theme = useMemo(() => createTheme(getDesignTokens(mode)), [mode]);
+  const theme = useMemo(
+    () => createTheme(getDesignTokens(mode) as ThemeOptions),
+    [mode]
+  );
 
   return (
     <ThemeContext.Provider value={colorMode}>
