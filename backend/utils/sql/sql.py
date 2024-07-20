@@ -1,9 +1,10 @@
-import sqlite3
-import pandas as pd
 from pathlib import Path
 from datetime import datetime, timezone
+import sqlite3
+import pandas as pd
 
 from utils.sql.make_db import init_tables
+
 
 def insert_new_sources(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
     """Adds new sources to the sources table with new PK
