@@ -1,4 +1,5 @@
 from fetch_external_data import return_clean_json_data
+from text_preprocessing import preprocess_text
 from flask import Flask
 
 app = Flask(__name__)
@@ -6,6 +7,7 @@ app = Flask(__name__)
 @app.route("/", methods=["GET"])
 def home():
     response = return_clean_json_data("remotive", "https://remotive.com/api/remote-jobs")
+    response = preprocess_text(response)
     return {"message": response}, 200
 
 
