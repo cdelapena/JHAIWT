@@ -1,13 +1,12 @@
-import { FC } from "react";
+import React from 'react';
+import SearchResults from './SearchResults/SearchResults';
 
-import SearchResults from "./SearchResults/SearchResults";
-
-const ResultsPage: FC = () => {
+const ResultsPage: React.FC = () => {
   return (
     <>
       <h1 className="title">Results</h1>
       <br />
-      <SearchResults></SearchResults>
+      <SearchResults />
     </>
   );
 };
