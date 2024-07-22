@@ -100,6 +100,7 @@ def fetch_external_data(api_sources: Path) -> pd.DataFrame:
                 "required_location",
                 "salary",
                 "description",
+                
             ],
         )
         remotive_df = remotive_df.drop(

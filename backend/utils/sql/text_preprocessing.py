@@ -1,8 +1,5 @@
 import pandas as pd
-import string
-from reference_text import stopwords, punct_to_remove, punct_to_sub
-
-PUNCT_TO_REMOVE = string.punctuation
+from utils.sql.reference_text import stopwords, punct_to_remove, punct_to_sub
 
 def remove_punctuation(text: str) -> str:
     return text.translate(str.maketrans('', '', punct_to_remove))
@@ -25,7 +22,7 @@ def preprocess_text(data) -> list:
     if isinstance(data, list):
         df = pd.DataFrame(data)
     else:
-        df = data
+        df = data.copy()
 
     # Create intermediate columns for temp storage
     df['description_lower'] = df['description'].str.lower()
@@ -33,11 +30,11 @@ def preprocess_text(data) -> list:
     df['description_punct_subbed'] = df['description_wo_punct'].apply(substitute_punctuation)
     df['description_clean'] = df['description_punct_subbed'].apply(remove_stopwords)
     
-    # Remove intermediate columns
-    df.drop(['description_lower', 'description_wo_punct'], axis=1, inplace=True)
+    # Renaming the final cleaned column to 'preprocessed_description'
+    df['preprocessed_description'] = df['description_clean']
     
-    # Renaming the final cleaned column to 'description'
-    df.rename(columns={'description_clean': 'description'}, inplace=True)
+    # Remove intermediate columns
+    df.drop(['description_lower', 'description_wo_punct', 'description_punct_subbed', 'description_clean'], axis=1, inplace=True)
 
     # Replace NaN values with None
     df = df.where(pd.notnull(df), None)

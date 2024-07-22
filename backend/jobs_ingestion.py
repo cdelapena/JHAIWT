@@ -1,6 +1,5 @@
 from pathlib import Path
 import sys
-
 from fetch_external_data import fetch_external_data
 from utils.sql.sql import db_ingestion
 
@@ -28,4 +27,4 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         err_msg = f"Ingestion failed: {e}"
-        sys.exit(1, err_msg)
+        sys.exit(1)

@@ -2,9 +2,9 @@ from pathlib import Path
 from datetime import datetime, timezone
 import sqlite3
 import pandas as pd
-
+#from utils.sql.text_preprocessing import preprocess_text
 from utils.sql.make_db import init_tables
-
+from utils.sql.reference_text import stopwords, punct_to_remove, punct_to_sub
 
 def insert_new_sources(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
     """Adds new sources to the sources table with new PK
@@ -133,8 +133,37 @@ def upsert_new_postings(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
     )
     df.fillna(value="None", inplace=True)
 
+
+    # Add a temporary ID for processing
+    df['temp_id'] = df.index
+
+    # Preprocess the descriptions before upserting
+    try:
+        print("\t-> Preprocessing descriptions...")
+        descriptions_preprocessed = preprocess_text(df[['temp_id', 'description']])
+        print("\t-> Descriptions preprocessed.")
+    except Exception as e:
+        print(f"Error during preprocessing: {e}")
+        raise
+
+    try:
+        df_preprocessed = pd.DataFrame(descriptions_preprocessed)
+        print(f"\t-> df_preprocessed: {df_preprocessed.head()}")
+    except Exception as e:
+        print(f"Error creating DataFrame from preprocessed descriptions: {e}")
+        raise
+
+    try:
+        df = df.merge(df_preprocessed[['temp_id', 'preprocessed_description']], on='temp_id')
+        print(f"\t-> Merged DataFrame columns: {df.columns}")
+        df.drop('temp_id', axis=1, inplace=True)
+    except Exception as e:
+        print(f"Error merging preprocessed descriptions: {e}")
+        raise
+
     # Convert DataFrame to a list of tuples
     postings = df.to_records(index=False).tolist()
+    print('\t-> Upserting preprocessed descriptions...')
 
     # Prepare the SQL statement
     columns = ", ".join(df.columns)
@@ -187,12 +216,56 @@ def db_ingestion(df: pd.DataFrame, db_filename: str = "Job.db") -> None:
             init_tables(jobs_conn)
             print(f"\t->Initializing complete. {db_filename} is ready for ingestion.\n")
 
-        print(f"Inserting [{db_filename.split(".")[0]}].[sources] table...")
+        print(f"Inserting [{db_filename.split('.')[0]}].[sources] table...")
         insert_new_sources(df, jobs_conn)
 
-        print(f"Inserting [{db_filename.split(".")[0]}].[tags] table...")
+        print(f"Inserting [{db_filename.split('.')[0]}].[tags] table...")
         insert_new_tags(df, jobs_conn)
 
-        print(f"Upserting [{db_filename.split(".")[0]}].[postings] table...")
+        print(f"Upserting [{db_filename.split('.')[0]}].[postings] table...")
         upsert_new_postings(df, jobs_conn)
     return
+
+
+
+def remove_punctuation(text: str) -> str:
+    return text.translate(str.maketrans('', '', punct_to_remove))
+
+def substitute_punctuation(text: str) -> str:
+    for key, value in punct_to_sub.items():
+        text = text.replace(key, value)
+    return text
+
+def remove_stopwords(text: str) -> str:
+    return ' '.join([word for word in text.split() if word.lower() not in stopwords])
+
+def preprocess_text(data) -> list:
+    """
+    RETURNS: Preprocessed text data as-follows:
+        - Stopwords removed
+        - Lowercased
+        - Punctuation removed
+    """
+    print("Starting preprocess_text...")
+    if isinstance(data, list):
+        df = pd.DataFrame(data)
+    else:
+        df = data.copy()
+
+    # Create intermediate columns for temp storage
+    df['description_lower'] = df['description'].str.lower()
+    df['description_wo_punct'] = df['description_lower'].apply(remove_punctuation)
+    df['description_punct_subbed'] = df['description_wo_punct'].apply(substitute_punctuation)
+    df['description_clean'] = df['description_punct_subbed'].apply(remove_stopwords)
+    
+    # Renaming the final cleaned column to 'preprocessed_description'
+    df['preprocessed_description'] = df['description_clean']
+    
+    # Remove intermediate columns
+    df.drop(['description_lower', 'description_wo_punct', 'description_punct_subbed', 'description_clean'], axis=1, inplace=True)
+
+    # Replace NaN values with None
+    df = df.where(pd.notnull(df), None)
+    
+    print("Completed preprocess_text.")
+    return df.to_dict(orient='records')
