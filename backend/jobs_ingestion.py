@@ -27,4 +27,4 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         err_msg = f"Ingestion failed: {e}"
-        sys.exit(1)
+        sys.exit(1, err_msg)
