@@ -1,6 +1,5 @@
 from pathlib import Path
 import sys
-
 from fetch_external_data import fetch_external_data
 from utils.sql.sql import db_ingestion
 

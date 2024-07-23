@@ -34,8 +34,9 @@ def get_all_job_postings(db_filename) -> str:
                 company_name,
                 job_title,
                 description,
+                preprocessed_description,
                 salary,
-                STRING_AGG(t.name, ', ') AS tags,
+                GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
                 source_url,
                 publish_date
@@ -48,6 +49,7 @@ def get_all_job_postings(db_filename) -> str:
                 company_name,
                 job_title,
                 description,
+                preprocessed_description,
                 salary,
                 job_type,
                 source_url,
@@ -61,11 +63,12 @@ def get_all_job_postings(db_filename) -> str:
                 company_name=row[2],
                 job_title=row[3],
                 description = row[4],
-                salary=row[5],
-                tags=row[6],
-                job_type=row[7],
+                preprocessed_description=row[5],
+                salary=row[6],
+                tags=row[7],
+                job_type=row[8],
                 source_url=row[8],
-                publish_date=row[9],
+                publish_date=row[10],
             )
             for row in cursor.fetchall()
         ]
@@ -101,8 +104,9 @@ def get_job_postings_by_category(categories: str, db_filename: str) -> str:
                 company_name,
                 job_title,
                 description,
+                preprocessed_description,
                 salary,
-                STRING_AGG(t.name, ', ') AS tags,
+                GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
                 source_url,
                 publish_date
@@ -116,6 +120,7 @@ def get_job_postings_by_category(categories: str, db_filename: str) -> str:
                 company_name,
                 job_title,
                 description,
+                preprocessed_description,
                 salary,
                 job_type,
                 source_url,
@@ -131,11 +136,12 @@ def get_job_postings_by_category(categories: str, db_filename: str) -> str:
                 company_name=row[2],
                 job_title=row[3],
                 description = row[4],
-                salary=row[5],
-                tags=row[6],
-                job_type=row[7],
-                source_url=row[8],
-                publish_date=row[9],
+                preprocessed_description=row[5],
+                salary=row[6],
+                tags=row[7],
+                job_type=row[8],
+                source_url=row[9],
+                publish_date=row[10],
             )
             for row in cursor.fetchall()
         ]
@@ -145,3 +151,4 @@ def get_job_postings_by_category(categories: str, db_filename: str) -> str:
 
 
 print(get_all_job_postings("Job.db"))
+# print(get_job_postings_by_category("QA", "Job.db"))
