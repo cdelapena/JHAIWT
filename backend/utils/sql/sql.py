@@ -6,6 +6,19 @@ import pandas as pd
 from utils.sql.make_db import init_tables
 
 
+class MultipleRecordsFound(Exception):
+    """Exception raised when a query returns more records than expected."""
+
+    def __init__(self, expected, actual, message="More records found than expected"):
+        self.expected = expected
+        self.actual = actual
+        self.message = f"{message}: Expected {expected}, found {actual}"
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f"{self.message}"
+
+
 def insert_new_sources(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
     """Adds new sources to the sources table with new PK
 
@@ -14,10 +27,10 @@ def insert_new_sources(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
         conn (sqlite3.Connection): inject dependency
     """
     # Select distinct sources from DataFrame to be inserted...
-    source_df = df[["source", "logo"]]
+    source_df = df[["source"]]
     source_df = source_df.astype({"source": str})
     source_df = source_df.rename(columns={"source": "name"}).drop_duplicates(
-        subset=["name", "logo"]
+        subset=["name"]
     )
     sources = set(source_df["name"].unique())
 
@@ -70,6 +83,37 @@ def insert_new_tags(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
     return
 
 
+def insert_new_categories(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
+    """Adds new categories to the categories table with new PK
+
+    Args:
+        df (pd.DataFrame): jobs_df from fetch_external_data
+        conn (sqlite3.Connection): inject dependency
+    """
+    # Select distinct tags from DataFrame to be inserted...
+    category_df = df[["category"]]
+    category_df = category_df.astype({"category": str})
+    category_df = category_df.rename(columns={"category": "name"}).drop_duplicates(subset=["name"])
+    categories = set(category_df["name"].unique())
+
+    # Check against records in db...
+    current_categories = set()
+    db_categories = pd.read_sql("SELECT name FROM categories GROUP BY name", conn)
+    if not db_categories.empty:
+        current_categories = set(db_categories["name"].unique())
+
+    # Insert new...
+    new_categories = list(categories - current_categories)
+    if new_categories:
+        print(f"\t-> Upserting {len(new_categories)} record(s) into [Job].[tags]...")
+        new_category_df = category_df[category_df["name"].isin(new_categories)]
+        new_category_df.to_sql("categories", conn, if_exists="append", index=False)
+        conn.commit()
+    else:
+        print("\t->No new category records.")
+    return
+
+
 def upsert_new_postings(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
     """Upserts job postings into the postings table with new PK, and links
     to sources and tags table with appropriate FKs.
@@ -103,6 +147,19 @@ def upsert_new_postings(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
     df = df.rename(columns={"id": "source_id"})
 
     del source_df
+
+    # Add the category FK to the df...
+    category_df = pd.read_sql("SELECT id, name FROM categories;", conn)
+    category_df["name"] = category_df["name"].astype(pd.StringDtype())
+
+    df = df.rename(columns={"category": "name"})
+
+    print("\t-> Getting [Job].[categories] FKs...")
+    df = df.merge(category_df, on="name", how="inner")
+    df = df.drop("name", axis=1)
+    df = df.rename(columns={"id": "category_id"})
+
+    del category_df
 
     # Add the tags FK to the df...
     tags_df = pd.read_sql("SELECT id, name FROM tags;", conn)
@@ -189,6 +246,9 @@ def db_ingestion(df: pd.DataFrame, db_filename: str = "Job.db") -> None:
 
         print(f"Inserting [{db_filename.split(".")[0]}].[sources] table...")
         insert_new_sources(df, jobs_conn)
+
+        print(f"Inserting [{db_filename.split(".")[0]}].[categories] table...")
+        insert_new_categories(df, jobs_conn)
 
         print(f"Inserting [{db_filename.split(".")[0]}].[tags] table...")
         insert_new_tags(df, jobs_conn)

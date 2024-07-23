@@ -110,7 +110,8 @@ def fetch_external_data(api_sources: Path) -> pd.DataFrame:
         remotive_df["description"] = remotive_df["description"].apply(
             lambda text: BeautifulSoup(text, "html.parser").get_text(
                 separator=" ", strip=True
-            )
+            ).encode("ascii", "ignore")
+            .decode("utf-8")
         )
         remotive_df = remotive_df.astype(pd.StringDtype())
         return remotive_df

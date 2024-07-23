@@ -2,7 +2,8 @@ from pathlib import Path
 from datetime import datetime, timezone
 import sqlite3
 
-from utils.sql.models import JobPosting
+from utils.sql.models import JobPosting, ModelData, JobCategory, JobTag
+from utils.sql.sql import MultipleRecordsFound
 
 
 def get_connection(db_filename) -> sqlite3.Connection:
@@ -11,14 +12,14 @@ def get_connection(db_filename) -> sqlite3.Connection:
     return sqlite3.connect(db_file)
 
 
-def get_all_job_postings(db_filename) -> str:
-    """_summary_
+def get_all_job_postings(db_filename: str) -> list:
+    """Gets unfiltered data for Browse table
 
     Args:
-        db_filename (_type_): _description_
+        db_filename (str): db for connection
 
     Returns:
-        str: _description_
+        list: db records [id, category, company, job_title, salary, tags, job_type, publish_date]
     """
     print("Getting connection to db...")
     conn = get_connection(db_filename)
@@ -30,24 +31,25 @@ def get_all_job_postings(db_filename) -> str:
             """
             SELECT
                 p.id,
-                category,
-                company_name,
                 job_title,
                 description,
+                c.name,
+                company_name,
                 salary,
-                STRING_AGG(t.name, ', ') AS tags,
+                GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
                 source_url,
                 publish_date
                 FROM postings p
                     JOIN tags t ON t.id = p.tag_id
+                    JOIN categories c ON c.id = p.category_id
                 WHERE p.inactive_date_utc IS NOT NULL
                 GROUP BY
                 p.id,
-                category,
-                company_name,
                 job_title,
                 description,
+                c.name,
+                company_name,
                 salary,
                 job_type,
                 source_url,
@@ -57,15 +59,15 @@ def get_all_job_postings(db_filename) -> str:
         postings = [
             JobPosting(
                 id=row[0],
-                category=row[1],
-                company_name=row[2],
-                job_title=row[3],
-                description = row[4],
+                job_title=row[1],
+                description=row[2],
+                category=row[3],
+                company_name=row[4],
                 salary=row[5],
                 tags=row[6],
-                job_type=row[7],
-                source_url=row[8],
-                publish_date=row[9],
+                job_type=row[6],
+                source_url=row[7],
+                publish_date=row[8],
             )
             for row in cursor.fetchall()
         ]
@@ -74,74 +76,168 @@ def get_all_job_postings(db_filename) -> str:
     return postings
 
 
-def get_job_postings_by_category(categories: str, db_filename: str) -> str:
+def get_job_posting(job_id: int, db_filename: str) -> list:
     """_summary_
 
     Args:
-        categories (str): _description_
+        job_id (int): _description_
         db_filename (str): _description_
 
+    Raises:
+        MultipleRecordsFound: _description_
+
     Returns:
-        str: _description_
+        list: _description_
     """
-    items = [item.strip() for item in categories.split(",")]
-    category_req = ", ".join(f"'{item}'" for item in items)
-
-    print("Getting connection to db...")
-    conn = get_connection(db_filename)
-    with conn:
-        cursor = conn.cursor()
-
-        print(f"Executing getJobPostingsByCategory, ({category_req}) sproc...")
-        query = (
-            f"""
+    query = f"""
             SELECT
                 p.id,
-                category,
-                company_name,
                 job_title,
                 description,
+                c.name,
+                company_name,
                 salary,
-                STRING_AGG(t.name, ', ') AS tags,
+                GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
                 source_url,
                 publish_date
                 FROM postings p
                     JOIN tags t ON t.id = p.tag_id
+                    JOIN categories c ON c.id = p.category_id
                 WHERE p.inactive_date_utc IS NOT NULL
-                AND category IN ({category_req})
+                    AND p.id = {job_id}
                 GROUP BY
                 p.id,
-                category,
-                company_name,
                 job_title,
                 description,
+                c.name,
+                company_name,
                 salary,
                 job_type,
                 source_url,
                 publish_date
             """
-        )
-        print(query)
+
+    print("Getting connection to db...")
+    conn = get_connection(db_filename)
+    with conn:
+        cursor = conn.cursor()
         cursor.execute(query)
-        postings = [
+        result = [
             JobPosting(
                 id=row[0],
-                category=row[1],
-                company_name=row[2],
-                job_title=row[3],
-                description = row[4],
+                job_title=row[1],
+                description=row[2],
+                category=row[3],
+                company_name=row[4],
                 salary=row[5],
                 tags=row[6],
-                job_type=row[7],
-                source_url=row[8],
-                publish_date=row[9],
+                job_type=row[6],
+                source_url=row[7],
+                publish_date=row[8],
             )
             for row in cursor.fetchall()
         ]
 
-    print(f"getJobPostingsByCategory returned {len(postings)} records.")
+        if (n := len(result)) > 1:
+            raise MultipleRecordsFound(expected=1, actual=n)
+        elif n == 0:
+            return None
+        return result[0]
+
+
+def get_model_data_by_category(categories: str, db_filename: str) -> list:
+    """Gathers model-specific data by job category name
+
+    Args:
+        categories (str): comma-sep string of categories
+        db_filename (str): db for connection
+
+    Returns:
+        list: db records [id, category, job_title, description, tags]
+    """
+    items = [item.strip() for item in categories.split(",")]
+    category_req = ", ".join(f"'{item}'" for item in items)
+
+    query = f"""
+        SELECT
+            p.id,
+            c.name,
+            job_title,
+            description,
+            GROUP_CONCAT(t.name, ', ') AS tags
+            FROM postings p
+                JOIN tags t ON t.id = p.tag_id
+                JOIN categories c ON c.id = p.category_id
+            WHERE p.inactive_date_utc IS NOT NULL
+                AND c.name IN ({category_req})
+            GROUP BY
+            p.id,
+            c.name,
+            job_title,
+            description
+        """
+
+    print("Getting connection to db...")
+    conn = get_connection(db_filename)
+    with conn:
+        cursor = conn.cursor()
+        print(f"Executing getModelDataByCategory, ({category_req}) sproc...")
+        cursor.execute(query)
+        postings = [
+            ModelData(
+                id=row[0],
+                category=row[1],
+                job_title=row[2],
+                description=row[3],
+                tags=row[4],
+            )
+            for row in cursor.fetchall()
+        ]
+
+    print(f"getModelDataByCategory returned {len(postings)} records.")
     return postings
 
 
-print(get_all_job_postings("Job.db"))
+def get_categories(db_filename: str) -> list:
+    """Gets complete list of categories and ids for populating form drop-downs
+
+    Args:
+        db_filename (str): db for connection
+
+    Returns:
+        list: db records [category]
+    """
+    print("Getting connection to db...")
+    conn = get_connection(db_filename)
+    with conn:
+        cursor = conn.cursor()
+
+        print("Executing getCategories sproc...")
+        cursor.execute("SELECT id, name FROM categories GROUP BY id, name")
+        categories = [JobCategory(id=row[0], name=row[1]) for row in cursor.fetchall()]
+
+    print(f"getCategories returned {len(categories)} records.")
+    return categories
+
+
+def get_tags(db_filename: str) -> list:
+    """Gets complete list of tags and ids for populating form
+
+    Args:
+        db_filename (str): db for connection
+
+    Returns:
+        list: db records [tag]
+    """
+    print("Getting connection to db...")
+    conn = get_connection(db_filename)
+    with conn:
+        cursor = conn.cursor()
+
+        print("Executing getTags sproc...")
+        cursor.execute("SELECT id, name FROM tags GROUP BY id, name")
+        tags = [JobTag(id=row[0], name=row[1]) for row in cursor.fetchall()]
+
+    print(f"getTags returned {len(tags)} records.")
+    return tags
