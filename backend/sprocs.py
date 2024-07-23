@@ -36,7 +36,7 @@ def get_all_job_postings(db_filename) -> str:
                 description,
                 preprocessed_description,
                 salary,
-                group_concat(t.name, ', ') AS tags,
+                GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
                 source_url,
                 publish_date
@@ -54,7 +54,6 @@ def get_all_job_postings(db_filename) -> str:
                 job_type,
                 source_url,
                 publish_date
-            LIMIT 3
             """
         )
         postings = [
@@ -107,7 +106,7 @@ def get_job_postings_by_category(categories: str, db_filename: str) -> str:
                 description,
                 preprocessed_description,
                 salary,
-                group_concat(t.name, ', ') AS tags,
+                GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
                 source_url,
                 publish_date
