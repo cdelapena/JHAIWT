@@ -3,6 +3,7 @@ Description: This file contains the reference text for the project.
 """
 
 punct_to_remove = "!\"#$%&'()*+,-.:;<=>?@[]^_`{|}~"
+# hyphen - is not included in the list of punctuation to remove
 
 punct_to_sub = {
 	"/": " ",
@@ -32,5 +33,5 @@ stopwords = [
     "haven", "haven't", "isn", "isn't", "ma", "mightn", "mightn't", 
     "mustn", "mustn't", "needn", "needn't", "shan", "shan't", "shouldn", 
     "shouldn't", "wasn", "wasn't", "weren", "weren't", "won", "won't", 
-    "wouldn", "wouldn't"
+    "wouldn", "wouldn't", "please", "thanks", "thank", "job", "position"
 ]

@@ -41,6 +41,7 @@ def init_tables(conn: sqlite3.Connection) -> None:
     company_name TEXT,
     job_title TEXT,
     description TEXT,
+    preprocessed_description TEXT,
     required_location TEXT,
     job_type TEXT,
     source_url TEXT,
