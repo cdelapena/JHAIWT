@@ -2,7 +2,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 import sqlite3
 import pandas as pd
-from utils.sql.text_preprocessing import preprocess_text
+from utils.data_cleaning.text_preprocessing import preprocess_text
 from utils.sql.make_db import init_tables
 
 
@@ -93,7 +93,9 @@ def insert_new_categories(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
     # Select distinct tags from DataFrame to be inserted...
     category_df = df[["category"]]
     category_df = category_df.astype({"category": str})
-    category_df = category_df.rename(columns={"category": "name"}).drop_duplicates(subset=["name"])
+    category_df = category_df.rename(columns={"category": "name"}).drop_duplicates(
+        subset=["name"]
+    )
     categories = set(category_df["name"].unique())
 
     # Check against records in db...
@@ -190,32 +192,32 @@ def upsert_new_postings(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
     )
     df.fillna(value="None", inplace=True)
 
-
     # Add a temporary ID for processing
-    df['temp_id'] = df.index
+    df["temp_id"] = df.index
 
     # Preprocess the descriptions before upserting
+    print("\t->Preprocessing description text for use by recommendation engine...")
     try:
-        descriptions_preprocessed = preprocess_text(df[['temp_id', 'description']])
-        print("\t-> Descriptions preprocessed.")
+        descriptions_preprocessed = preprocess_text(df[["temp_id", "description"]])
     except Exception as e:
         print(f"Error during preprocessing: {e}")
         raise
 
     try:
         df_preprocessed = pd.DataFrame(descriptions_preprocessed)
-        print(f"\t-> df_preprocessed: {df_preprocessed.head()}")
     except Exception as e:
         print(f"Error creating DataFrame from preprocessed descriptions: {e}")
         raise
 
     try:
-        df = df.merge(df_preprocessed[['temp_id', 'preprocessed_description']], on='temp_id')
-        print(f"\t-> Merged DataFrame columns: {df.columns}")
-        df.drop('temp_id', axis=1, inplace=True)
+        df = df.merge(
+            df_preprocessed[["temp_id", "preprocessed_description"]], on="temp_id"
+        )
+        df.drop("temp_id", axis=1, inplace=True)
     except Exception as e:
         print(f"Error merging preprocessed descriptions: {e}")
         raise
+    print("\t->preprocessed_description field complete.")
 
     # Convert DataFrame to a list of tuples
     postings = df.to_records(index=False).tolist()
@@ -274,10 +276,10 @@ def db_ingestion(df: pd.DataFrame, db_filename: str = "Job.db") -> None:
         print(f"Inserting [{db_filename.split('.')[0]}].[sources] table...")
         insert_new_sources(df, jobs_conn)
 
-        print(f"Inserting [{db_filename.split(".")[0]}].[categories] table...")
+        print(f"Inserting [{db_filename.split('.')[0]}].[categories] table...")
         insert_new_categories(df, jobs_conn)
 
-        print(f"Inserting [{db_filename.split(".")[0]}].[tags] table...")
+        print(f"Inserting [{db_filename.split('.')[0]}].[tags] table...")
         insert_new_tags(df, jobs_conn)
 
         print(f"Upserting [{db_filename.split('.')[0]}].[postings] table...")

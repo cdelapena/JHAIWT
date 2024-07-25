@@ -1,7 +1,7 @@
 from flask import Flask, make_response, jsonify
 from fetch_external_data import return_clean_json_data
-from text_preprocessing import preprocess_text
 import sprocs
+from utils.data_cleaning.text_preprocessing import preprocess_text
 from utils.sql.sql import MultipleRecordsFound
 
 
