@@ -19,7 +19,7 @@ def get_all_job_postings(db_filename: str) -> list:
         db_filename (str): db for connection
 
     Returns:
-        list: db records [id, category, company, job_title, salary, tags, job_type, publish_date]
+        list: db records [id, job_title, description, category, company, salary, tags, job_type, source_url, publish_date]
     """
     print("Getting connection to db...")
     conn = get_connection(db_filename)
@@ -35,7 +35,6 @@ def get_all_job_postings(db_filename: str) -> list:
                 description,
                 c.name,
                 company_name,
-                preprocessed_description,
                 salary,
                 GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
@@ -51,7 +50,6 @@ def get_all_job_postings(db_filename: str) -> list:
                 description,
                 c.name,
                 company_name,
-                preprocessed_description,
                 salary,
                 job_type,
                 source_url,
@@ -65,12 +63,11 @@ def get_all_job_postings(db_filename: str) -> list:
                 description=row[2],
                 category=row[3],
                 company_name=row[4],
-                preprocessed_description=row[5],
-                salary=row[6],
-                tags=row[7],
-                job_type=row[8],
-                source_url=row[9],
-                publish_date=row[10],
+                salary=row[5],
+                tags=row[6],
+                job_type=row[7],
+                source_url=row[8],
+                publish_date=row[9],
             )
             for row in cursor.fetchall()
         ]
@@ -80,17 +77,17 @@ def get_all_job_postings(db_filename: str) -> list:
 
 
 def get_job_posting(job_id: int, db_filename: str) -> list:
-    """_summary_
+    """Gets single record by id
 
     Args:
-        job_id (int): _description_
-        db_filename (str): _description_
+        job_id (int): [Job.db].[postings].id
+        db_filename (str): db for connection
 
     Raises:
-        MultipleRecordsFound: _description_
+        MultipleRecordsFound: custom error class
 
     Returns:
-        list: _description_
+        list: db record [id, job_title, description, category, company, salary, tags, job_type, source_url, publish_date]
     """
     query = f"""
             SELECT
@@ -99,7 +96,6 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
                 description,
                 c.name,
                 company_name,
-                preprocessed_description,
                 salary,
                 GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
@@ -116,7 +112,6 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
                 description,
                 c.name,
                 company_name,
-                preprocessed_description,
                 salary,
                 job_type,
                 source_url,
@@ -135,12 +130,11 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
                 description=row[2],
                 category=row[3],
                 company_name=row[4],
-                preprocessed_description=row[5],
-                salary=row[6],
-                tags=row[7],
-                job_type=row[8],
-                source_url=row[9],
-                publish_date=row[10],
+                salary=row[5],
+                tags=row[6],
+                job_type=row[7],
+                source_url=row[8],
+                publish_date=row[9],
             )
             for row in cursor.fetchall()
         ]
@@ -160,7 +154,7 @@ def get_model_data_by_category(categories: str, db_filename: str) -> list:
         db_filename (str): db for connection
 
     Returns:
-        list: db records [id, category, job_title, description, tags]
+        list: db records [id, category, job_title, preprocessed_description, tags]
     """
     items = [item.strip() for item in categories.split(",")]
     category_req = ", ".join(f"'{item}'" for item in items)
@@ -170,7 +164,7 @@ def get_model_data_by_category(categories: str, db_filename: str) -> list:
             p.id,
             c.name,
             job_title,
-            description,
+            preprocessed_description,
             GROUP_CONCAT(t.name, ', ') AS tags
             FROM postings p
                 JOIN tags t ON t.id = p.tag_id
@@ -181,7 +175,7 @@ def get_model_data_by_category(categories: str, db_filename: str) -> list:
             p.id,
             c.name,
             job_title,
-            description
+            preprocessed_description
         """
 
     print("Getting connection to db...")
@@ -195,7 +189,7 @@ def get_model_data_by_category(categories: str, db_filename: str) -> list:
                 id=row[0],
                 category=row[1],
                 job_title=row[2],
-                description=row[3],
+                preprocessed_description=row[3],
                 tags=row[4],
             )
             for row in cursor.fetchall()

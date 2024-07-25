@@ -5,7 +5,6 @@ class JobPosting:
     id: int
     job_title: str
     description: str
-    preprocessed_description: str
     category: str
     company_name: str
     salary: str
@@ -18,7 +17,7 @@ class JobPosting:
 class ModelData:
     id: int
     job_title: str
-    description: str
+    preprocessed_description: str
     category: str
     tags: str
 
