@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import datetime, timezone
+import time
 import sqlite3
 
 from utils.sql.models import JobPosting, ModelData, JobCategory, JobTag
@@ -12,6 +13,23 @@ def get_connection(db_filename) -> sqlite3.Connection:
     return sqlite3.connect(db_file)
 
 
+def timer(func: object):
+    """Decorator that wraps sproc calls to the db used for monitoring performance
+
+    Args:
+        func (object): A function object
+    """
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"\t->Query returned in {execution_time:.4f} seconds")
+        return result
+    return wrapper
+
+
+@timer
 def get_all_job_postings(db_filename: str) -> list:
     """Gets unfiltered data for Browse table
 
@@ -76,6 +94,7 @@ def get_all_job_postings(db_filename: str) -> list:
     return postings
 
 
+@timer
 def get_job_posting(job_id: int, db_filename: str) -> list:
     """Gets single record by id
 
@@ -146,6 +165,7 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
         return result[0]
 
 
+@timer
 def get_model_data_by_category(categories: str, db_filename: str) -> list:
     """Gathers model-specific data by job category name
 
@@ -199,6 +219,7 @@ def get_model_data_by_category(categories: str, db_filename: str) -> list:
     return postings
 
 
+@timer
 def get_categories(db_filename: str) -> list:
     """Gets complete list of categories and ids for populating form drop-downs
 
@@ -221,6 +242,7 @@ def get_categories(db_filename: str) -> list:
     return categories
 
 
+@timer
 def get_tags(db_filename: str) -> list:
     """Gets complete list of tags and ids for populating form
 

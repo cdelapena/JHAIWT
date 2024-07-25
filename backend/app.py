@@ -18,7 +18,7 @@ def home():
 
 
 @app.route("/api/job", methods=["GET"])
-def get_all():
+def get_all_jobs():
     print("GET api/job")
     response = sprocs.get_all_job_postings("Job.db")
     print("SUCCESS")
@@ -35,6 +35,22 @@ def get_job(job_id):
     except MultipleRecordsFound as e:
         print(f"Failed to fetch job {job_id}: {e}")
         return make_response("No content found", 409)
+
+
+@app.route("/api/tag", methods=["GET"])
+def get_all_tags():
+    print("GET api/tag")
+    response = sprocs.get_tags("Job.db")
+    print("SUCCESS")
+    return jsonify(response)
+
+
+@app.route("/api/category", methods=["GET"])
+def get_all_categoriess():
+    print("GET api/category")
+    response = sprocs.get_categories("Job.db")
+    print("SUCCESS")
+    return jsonify(response)
 
 
 if __name__ == "__main__":
