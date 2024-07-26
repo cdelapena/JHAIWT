@@ -14,9 +14,15 @@ def init_tables(conn: sqlite3.Connection) -> None:
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS sources (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        logo TEXT
-        )
+        name TEXT
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT
+    )
     """)
 
     cursor.execute("""
@@ -30,13 +36,13 @@ def init_tables(conn: sqlite3.Connection) -> None:
     CREATE TABLE IF NOT EXISTS postings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     source_id INTEGER,
+    category_id INTEGER,
     tag_id INTEGER,
     company_name TEXT,
     job_title TEXT,
     description TEXT,
     preprocessed_description TEXT,
     required_location TEXT,
-    category TEXT,
     job_type TEXT,
     source_url TEXT,
     salary TEXT,
@@ -44,6 +50,7 @@ def init_tables(conn: sqlite3.Connection) -> None:
     active_date_utc TEXT,
     inactive_date_utc TEXT,
     FOREIGN KEY (source_id) REFERENCES sources (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE
     )
 """)
