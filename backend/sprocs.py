@@ -19,6 +19,7 @@ def timer(func: object):
     Args:
         func (object): A function object
     """
+
     def wrapper(*args, **kwargs):
         start_time = time.time()
         result = func(*args, **kwargs)
@@ -26,6 +27,7 @@ def timer(func: object):
         execution_time = end_time - start_time
         print(f"\t->Query returned in {execution_time:.4f} seconds")
         return result
+
     return wrapper
 
 
@@ -91,6 +93,73 @@ def get_all_job_postings(db_filename: str) -> list:
         ]
 
     print(f"getAllJobPostings returned {len(postings)} records.")
+    return postings
+
+
+@timer
+def get_some_job_postings(db_filename: str, number: int) -> list:
+    """Gets a certain number of results of unfiltered data for Browse table
+
+    Args:
+        db_filename (str): db for connection
+        number (int): number of results to return
+
+    Returns:
+        list: a select number of db records [id, job_title, description, category, company, salary, tags, job_type, source_url, publish_date]
+    """
+    print("Getting connection to db...")
+    conn = get_connection(db_filename)
+    with conn:
+        cursor = conn.cursor()
+
+        print("Executing getSomeJobPostings sproc...")
+        cursor.execute(
+            f"""
+            SELECT
+                p.id,
+                job_title,
+                description,
+                c.name,
+                company_name,
+                salary,
+                GROUP_CONCAT(t.name, ', ') AS tags,
+                job_type,
+                source_url,
+                publish_date
+                FROM postings p
+                    JOIN tags t ON t.id = p.tag_id
+                    JOIN categories c ON c.id = p.category_id
+                WHERE p.inactive_date_utc IS NOT NULL
+                GROUP BY
+                p.id,
+                job_title,
+                description,
+                c.name,
+                company_name,
+                salary,
+                job_type,
+                source_url,
+                publish_date
+                LIMIT {str(number)}
+            """
+        )
+        postings = [
+            JobPosting(
+                id=row[0],
+                job_title=row[1],
+                description=row[2],
+                category=row[3],
+                company_name=row[4],
+                salary=row[5],
+                tags=row[6],
+                job_type=row[7],
+                source_url=row[8],
+                publish_date=row[9],
+            )
+            for row in cursor.fetchall()
+        ]
+
+    print(f"getSomeJobPostings returned {len(postings)} records.")
     return postings
 
 
