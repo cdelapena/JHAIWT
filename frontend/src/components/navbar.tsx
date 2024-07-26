@@ -1,7 +1,6 @@
 import React from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
-import { blue } from "@mui/material/colors";
 
 const Navbar: React.FC = () => {
   return (
@@ -25,9 +24,6 @@ const Navbar: React.FC = () => {
             <Typography
               sx={{
                 display: "inline-block",
-                "&:hover": {
-                  color: "text.secondary",
-                },
               }}
             >
               Job Hunting AI Web Tool
