@@ -46,7 +46,7 @@ def get_all_tags():
 
 
 @app.route("/api/category", methods=["GET"])
-def get_all_categoriess():
+def get_all_categories():
     print("GET api/category")
     response = sprocs.get_categories("Job.db")
     print("SUCCESS")
