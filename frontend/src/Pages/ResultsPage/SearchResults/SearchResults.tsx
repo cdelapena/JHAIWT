@@ -2,7 +2,7 @@ import { FC, useContext, useEffect, useState } from "react";
 
 import SingleResult from "./SingleResult/SingleResult";
 import { JobInterface } from "../../../shared/interfaces";
-import { flaskApiUrl } from "../../../shared/urls";
+import { baseBackendUrl } from "../../../shared/urls";
 
 import "./SearchResults.css";
 import axios from "axios";
@@ -11,11 +11,6 @@ import { Typography } from "@mui/material";
 
 const SearchResults: FC = () => {
   const { searchValues } = useContext(SearchContext);
-  const regex = new RegExp("localhost");
-
-  const backendUrl: string = regex.test(window.location.href)
-    ? "http://localhost:8080"
-    : flaskApiUrl;
 
   const [jobs, setJobs] = useState<JobInterface[]>([]);
   const [isError, setIsError] = useState<Boolean>(false);
@@ -24,7 +19,7 @@ const SearchResults: FC = () => {
     await axios({
       method: "POST",
       url: `/api/job/results/${searchValues.numberOfSearchResults}`,
-      baseURL: backendUrl,
+      baseURL: baseBackendUrl,
       data: { searchValues },
     })
       .then((response) => {

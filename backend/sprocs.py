@@ -39,7 +39,7 @@ def get_all_job_postings(db_filename: str) -> list:
         db_filename (str): db for connection
 
     Returns:
-        list: db records [id, job_title, description, category, company, salary, tags, job_type, source_url, publish_date]
+        list: db records [id, title, description, category, company, salary, tags, job_type, source_url, publish_date, candidate_required_location]
     """
     print("Getting connection to db...")
     conn = get_connection(db_filename)
@@ -51,7 +51,7 @@ def get_all_job_postings(db_filename: str) -> list:
             """
             SELECT
                 p.id,
-                job_title,
+                title,
                 description,
                 c.name,
                 company_name,
@@ -59,27 +59,29 @@ def get_all_job_postings(db_filename: str) -> list:
                 GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
                 source_url,
-                publish_date
+                publish_date,
+                candidate_required_location
                 FROM postings p
                     JOIN tags t ON t.id = p.tag_id
                     JOIN categories c ON c.id = p.category_id
                 WHERE p.inactive_date_utc IS NOT NULL
                 GROUP BY
                 p.id,
-                job_title,
+                title,
                 description,
                 c.name,
                 company_name,
                 salary,
                 job_type,
                 source_url,
-                publish_date
+                publish_date,
+                candidate_required_location
             """
         )
         postings = [
             JobPosting(
                 id=row[0],
-                job_title=row[1],
+                title=row[1],
                 description=row[2],
                 category=row[3],
                 company_name=row[4],
@@ -88,6 +90,7 @@ def get_all_job_postings(db_filename: str) -> list:
                 job_type=row[7],
                 source_url=row[8],
                 publish_date=row[9],
+                candidate_required_location=row[10],
             )
             for row in cursor.fetchall()
         ]
@@ -105,7 +108,7 @@ def get_some_job_postings(db_filename: str, number: int) -> list:
         number (int): number of results to return
 
     Returns:
-        list: a select number of db records [id, job_title, description, category, company, salary, tags, job_type, source_url, publish_date]
+        list: a select number of db records [id, title, description, category, company, salary, tags, job_type, source_url, publish_date, candidate_required_location]
     """
     print("Getting connection to db...")
     conn = get_connection(db_filename)
@@ -117,7 +120,7 @@ def get_some_job_postings(db_filename: str, number: int) -> list:
             f"""
             SELECT
                 p.id,
-                job_title,
+                title,
                 description,
                 c.name,
                 company_name,
@@ -125,28 +128,30 @@ def get_some_job_postings(db_filename: str, number: int) -> list:
                 GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
                 source_url,
-                publish_date
+                publish_date,
+                candidate_required_location
                 FROM postings p
                     JOIN tags t ON t.id = p.tag_id
                     JOIN categories c ON c.id = p.category_id
                 WHERE p.inactive_date_utc IS NOT NULL
                 GROUP BY
                 p.id,
-                job_title,
+                title,
                 description,
                 c.name,
                 company_name,
                 salary,
                 job_type,
                 source_url,
-                publish_date
+                publish_date,
+                candidate_required_location
                 LIMIT {str(number)}
             """
         )
         postings = [
             JobPosting(
                 id=row[0],
-                job_title=row[1],
+                title=row[1],
                 description=row[2],
                 category=row[3],
                 company_name=row[4],
@@ -155,6 +160,7 @@ def get_some_job_postings(db_filename: str, number: int) -> list:
                 job_type=row[7],
                 source_url=row[8],
                 publish_date=row[9],
+                candidate_required_location=row[10],
             )
             for row in cursor.fetchall()
         ]
@@ -175,12 +181,12 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
         MultipleRecordsFound: custom error class
 
     Returns:
-        list: db record [id, job_title, description, category, company, salary, tags, job_type, source_url, publish_date]
+        list: db record [id, title, description, category, company, salary, tags, job_type, source_url, publish_date, candidate_required_location]
     """
     query = f"""
             SELECT
                 p.id,
-                job_title,
+                title,
                 description,
                 c.name,
                 company_name,
@@ -188,7 +194,8 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
                 GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
                 source_url,
-                publish_date
+                publish_date,
+                candidate_required_location
                 FROM postings p
                     JOIN tags t ON t.id = p.tag_id
                     JOIN categories c ON c.id = p.category_id
@@ -196,14 +203,15 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
                     AND p.id = {job_id}
                 GROUP BY
                 p.id,
-                job_title,
+                title,
                 description,
                 c.name,
                 company_name,
                 salary,
                 job_type,
                 source_url,
-                publish_date
+                publish_date,
+                candidate_required_location
             """
 
     print("Getting connection to db...")
@@ -214,7 +222,7 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
         result = [
             JobPosting(
                 id=row[0],
-                job_title=row[1],
+                title=row[1],
                 description=row[2],
                 category=row[3],
                 company_name=row[4],
@@ -223,6 +231,7 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
                 job_type=row[7],
                 source_url=row[8],
                 publish_date=row[9],
+                candidate_required_location=row[10],
             )
             for row in cursor.fetchall()
         ]
@@ -243,7 +252,7 @@ def get_model_data_by_category(categories: str, db_filename: str) -> list:
         db_filename (str): db for connection
 
     Returns:
-        list: db records [id, category, job_title, preprocessed_description, tags]
+        list: db records [id, category, title, preprocessed_description, tags]
     """
     items = [item.strip() for item in categories.split(",")]
     category_req = ", ".join(f"'{item}'" for item in items)
@@ -252,7 +261,7 @@ def get_model_data_by_category(categories: str, db_filename: str) -> list:
         SELECT
             p.id,
             c.name,
-            job_title,
+            title,
             preprocessed_description,
             GROUP_CONCAT(t.name, ', ') AS tags
             FROM postings p
@@ -263,7 +272,7 @@ def get_model_data_by_category(categories: str, db_filename: str) -> list:
             GROUP BY
             p.id,
             c.name,
-            job_title,
+            title,
             preprocessed_description
         """
 
@@ -277,7 +286,7 @@ def get_model_data_by_category(categories: str, db_filename: str) -> list:
             ModelData(
                 id=row[0],
                 category=row[1],
-                job_title=row[2],
+                title=row[2],
                 preprocessed_description=row[3],
                 tags=row[4],
             )

@@ -1,10 +1,10 @@
-import React from 'react';
-import BrowseResults from './BrowseResults/BrowseResults';
+import React from "react";
+import BrowseResults from "./BrowseResults/BrowseResults";
 
 const BrowsePage: React.FC = () => {
   return (
-    <div style={{ margin: '20px' }}>
-      <h1>Browse All Jobs</h1>
+    <div style={{ margin: "20px" }}>
+      <h1 className="title">Browse All Jobs</h1>
       <BrowseResults />
     </div>
   );
