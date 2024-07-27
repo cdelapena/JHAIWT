@@ -19,7 +19,6 @@ def timer(func: object):
     Args:
         func (object): A function object
     """
-
     def wrapper(*args, **kwargs):
         start_time = time.time()
         result = func(*args, **kwargs)
