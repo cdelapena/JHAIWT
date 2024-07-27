@@ -19,7 +19,6 @@ class JobPosting:
 @dataclass
 class ModelData:
     id: int
-    candidate_required_location: str
     title: str
     preprocessed_description: str
     category: str
