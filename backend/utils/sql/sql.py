@@ -132,9 +132,9 @@ def upsert_new_postings(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
 
     # Subtract records from the DB that are not in the API call
     active_urls = set()
-    db_active_urls = pd.read_sql("SELECT source_url FROM postings WHERE inactive_date_utc = 'None' GROUP BY source_url", conn)
+    db_active_urls = pd.read_sql("SELECT url FROM postings WHERE inactive_date_utc = 'None' GROUP BY url", conn)
     if not db_active_urls.empty:
-        active_urls = set(db_active_urls["source_url"])
+        active_urls = set(db_active_urls["url"])
 
     del db_active_urls
 
@@ -154,7 +154,7 @@ def upsert_new_postings(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
         inactivate_sql = """
 UPDATE postings
 SET inactive_date_utc = ?
-WHERE source_url = ?
+WHERE url = ?
 """
         cursor = conn.cursor()
         for batch in url_batches:
@@ -222,7 +222,7 @@ WHERE source_url = ?
         new_df = new_df.drop("logo", axis=1)
         new_df = new_df.rename(
             columns={
-                "url": "source_url",
+                "url": "url",
                 "date_published": "publish_date",
             }
         )

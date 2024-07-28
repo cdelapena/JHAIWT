@@ -44,7 +44,7 @@ def init_tables(conn: sqlite3.Connection) -> None:
     preprocessed_description TEXT,
     candidate_required_location TEXT,
     job_type TEXT,
-    source_url TEXT,
+    url TEXT,
     salary TEXT,
     publish_date TEXT,
     active_date_utc TEXT,

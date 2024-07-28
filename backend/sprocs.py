@@ -38,7 +38,7 @@ def get_all_job_postings(db_filename: str) -> list:
         db_filename (str): db for connection
 
     Returns:
-        list: db records [id, title, description, category, company, salary, tags, job_type, source_url, publish_date, candidate_required_location]
+        list: db records [id, title, description, category, company, salary, tags, job_type, url, publish_date, candidate_required_location]
     """
     print("Getting connection to db...")
     conn = get_connection(db_filename)
@@ -57,7 +57,7 @@ def get_all_job_postings(db_filename: str) -> list:
                 salary,
                 GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
-                source_url,
+                url,
                 publish_date,
                 candidate_required_location
                 FROM postings p
@@ -72,7 +72,7 @@ def get_all_job_postings(db_filename: str) -> list:
                 company_name,
                 salary,
                 job_type,
-                source_url,
+                url,
                 publish_date,
                 candidate_required_location
             """
@@ -87,7 +87,7 @@ def get_all_job_postings(db_filename: str) -> list:
                 salary=row[5],
                 tags=row[6],
                 job_type=row[7],
-                source_url=row[8],
+                url=row[8],
                 publish_date=row[9],
                 candidate_required_location=row[10],
             )
@@ -107,7 +107,7 @@ def get_some_job_postings(db_filename: str, number: int) -> list:
         number (int): number of results to return
 
     Returns:
-        list: a select number of db records [id, title, description, category, company, salary, tags, job_type, source_url, publish_date, candidate_required_location]
+        list: a select number of db records [id, title, description, category, company, salary, tags, job_type, url, publish_date, candidate_required_location]
     """
     print("Getting connection to db...")
     conn = get_connection(db_filename)
@@ -126,7 +126,7 @@ def get_some_job_postings(db_filename: str, number: int) -> list:
                 salary,
                 GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
-                source_url,
+                url,
                 publish_date,
                 candidate_required_location
                 FROM postings p
@@ -141,7 +141,7 @@ def get_some_job_postings(db_filename: str, number: int) -> list:
                 company_name,
                 salary,
                 job_type,
-                source_url,
+                url,
                 publish_date,
                 candidate_required_location
                 LIMIT {str(number)}
@@ -157,7 +157,7 @@ def get_some_job_postings(db_filename: str, number: int) -> list:
                 salary=row[5],
                 tags=row[6],
                 job_type=row[7],
-                source_url=row[8],
+                url=row[8],
                 publish_date=row[9],
                 candidate_required_location=row[10],
             )
@@ -180,7 +180,7 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
         MultipleRecordsFound: custom error class
 
     Returns:
-        list: db record [id, title, description, category, company, salary, tags, job_type, source_url, publish_date, candidate_required_location]
+        list: db record [id, title, description, category, company, salary, tags, job_type, url, publish_date, candidate_required_location]
     """
     query = f"""
             SELECT
@@ -192,7 +192,7 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
                 salary,
                 GROUP_CONCAT(t.name, ', ') AS tags,
                 job_type,
-                source_url,
+                url,
                 publish_date,
                 candidate_required_location
                 FROM postings p
@@ -208,7 +208,7 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
                 company_name,
                 salary,
                 job_type,
-                source_url,
+                url,
                 publish_date,
                 candidate_required_location
             """
@@ -228,7 +228,7 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
                 salary=row[5],
                 tags=row[6],
                 job_type=row[7],
-                source_url=row[8],
+                url=row[8],
                 publish_date=row[9],
                 candidate_required_location=row[10],
             )
