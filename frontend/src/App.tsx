@@ -15,7 +15,7 @@ import Home from "./Pages/Home/Home";
 import ResultsPage from "./Pages/ResultsPage/ResultsPage";
 import BrowsePage from "./Pages/BrowsePage/BrowsePage";
 import { getDesignTokens } from "./shared/colorTheme";
-import Navbar from "./components/navbar";
+import Navbar from "./components/Navbar";
 import { initialSearchValues } from "./shared/constants";
 import { SearchInterface } from "./shared/interfaces";
 

@@ -11,7 +11,7 @@ class JobPosting:
     salary: str
     tags: str
     job_type: str
-    source_url: str
+    url: str
     publish_date: str
     candidate_required_location: str
 

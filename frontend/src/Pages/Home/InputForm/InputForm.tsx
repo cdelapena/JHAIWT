@@ -16,11 +16,16 @@ import {
 
 import { useFormik } from "formik";
 import * as yup from "yup";
+import axios from "axios";
 
 import "./InputForm.css";
-import { NumberOfSearchResultsOptions, jobs } from "./InputFormHelper";
-import { useContext } from "react";
+import {
+  NumberOfSearchResultsOptions,
+  JobCategoryInterface,
+} from "./InputFormHelper";
+import { useContext, useEffect, useState } from "react";
 import { SearchContext } from "../../../shared/contexts";
+import { baseBackendUrl } from "../../../shared/urls";
 
 // schema: https://github.com/jquense/yup?tab=readme-ov-file#stringurlmessage-string--function-schema
 
@@ -43,6 +48,9 @@ const validationSchema = yup.object({
 const InputForm = () => {
   const navigate = useNavigate();
   const { setSearchValues } = useContext(SearchContext);
+  const [jobs, setJobs] = useState<JobCategoryInterface[]>([
+    { id: 0, name: "API Unavailable" },
+  ]);
 
   const formik = useFormik({
     initialValues: {
@@ -67,6 +75,29 @@ const InputForm = () => {
       navigate("/results");
     },
   });
+
+  const fetchData = async () => {
+    await axios({
+      method: "GET",
+      url: `/api/category`,
+      baseURL: baseBackendUrl,
+    })
+      .then((response) => {
+        const res = response.data;
+        setJobs(res);
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <div className="input-form-container">
@@ -99,7 +130,7 @@ const InputForm = () => {
             sx={{ textAlign: "left" }}
           >
             {jobs.map((job) => (
-              <MenuItem key={job.id.toString()} value={job.slug}>
+              <MenuItem key={job.id.toString()} value={job.id}>
                 {job.name}
               </MenuItem>
             ))}
