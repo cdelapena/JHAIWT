@@ -1,3 +1,4 @@
+import sys
 from flask import Flask, make_response, jsonify
 from flask_cors import CORS, cross_origin
 from fetch_external_data import return_clean_json_data
@@ -72,10 +73,11 @@ def get_all_categories():
 
 
 if __name__ == "__main__":
+    # Set-up db at Flask initialization
     try:
         jobs_ingestion.main()
     except RuntimeError as e:
-        print(e)
-        exit(1)
+        err = f"ERROR: {e}"
+        sys.exit()
 
     app.run(port=8080)
