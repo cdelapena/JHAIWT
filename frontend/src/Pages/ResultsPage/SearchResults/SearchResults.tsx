@@ -15,30 +15,29 @@ const SearchResults: FC = () => {
   const [jobs, setJobs] = useState<JobInterface[]>([]);
   const [isError, setIsError] = useState<Boolean>(false);
 
-  const fetchData = async () => {
-    await axios({
-      method: "POST",
-      url: `/api/job/results/${searchValues.numberOfSearchResults}`,
-      baseURL: baseBackendUrl,
-      data: { searchValues },
-    })
-      .then((response) => {
-        const res = response.data;
-        setJobs(res);
-      })
-      .catch((error) => {
-        if (error.response) {
-          console.log(error.response);
-          console.log(error.response.status);
-          console.log(error.response.headers);
-          setIsError(true);
-        }
-      });
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      await axios({
+        method: "POST",
+        url: `/api/job/results/${searchValues.numberOfSearchResults}`,
+        baseURL: baseBackendUrl,
+        data: { searchValues },
+      })
+        .then((response) => {
+          const res = response.data;
+          setJobs(res);
+        })
+        .catch((error: any) => {
+          setIsError(true);
+          if (error.response) {
+            console.log(error.response);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+          }
+        });
+    };
     fetchData();
-  }, []);
+  }, [searchValues]);
 
   return (
     <div className="search-results-container">
