@@ -2,6 +2,7 @@ from flask import Flask, make_response, jsonify
 from flask_cors import CORS, cross_origin
 from fetch_external_data import return_clean_json_data
 import sprocs
+import jobs_ingestion
 from utils.data_cleaning.text_preprocessing import preprocess_text
 from utils.sql.sql import MultipleRecordsFound
 
@@ -71,4 +72,10 @@ def get_all_categories():
 
 
 if __name__ == "__main__":
+    try:
+        jobs_ingestion.main()
+    except RuntimeError as e:
+        print(e)
+        exit(1)
+
     app.run(port=8080)

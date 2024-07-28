@@ -35,8 +35,8 @@ def init_tables(conn: sqlite3.Connection) -> None:
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS postings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    source_id INTEGER,
-    category_id INTEGER,
+    source_id INTEGER NOT NULL,
+    category_id INTEGER NOT NULL,
     tag_id INTEGER,
     company_name TEXT,
     title TEXT,
@@ -51,7 +51,7 @@ def init_tables(conn: sqlite3.Connection) -> None:
     inactive_date_utc TEXT,
     FOREIGN KEY (source_id) REFERENCES sources (id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (tag_id) REFERENCES tags (id)
     )
 """)
     return
