@@ -14,18 +14,19 @@ import {
   TableSortLabel,
 } from "@mui/material";
 import { JobInterface } from "../../../shared/interfaces";
-import { sampleJsonResponse } from "../../../shared/constants"; // Import the mock data
 import "./BrowseResults.css";
+import axios from "axios";
+import { baseBackendUrl } from "../../../shared/urls";
 
-type Order = 'asc' | 'desc';
+type Order = "asc" | "desc";
 
 const columnWidths = {
-  title: '25%',
-  company_name: '20%',
-  candidate_required_location: '20%',
-  category: '15%',
-  salary: '10%',
-  action: '10%'
+  title: "20%",
+  company_name: "10%",
+  candidate_required_location: "10%",
+  category: "10%",
+  salary: "10%",
+  action: "10%",
 };
 
 const BrowseResults: FC = () => {
@@ -34,22 +35,34 @@ const BrowseResults: FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [orderBy, setOrderBy] = useState<keyof JobInterface>('title');
-  const [order, setOrder] = useState<Order>('asc');
+  const [orderBy, setOrderBy] = useState<keyof JobInterface>("title");
+  const [order, setOrder] = useState<Order>("asc");
 
   useEffect(() => {
     // Use the mock data instead of fetching from the API
     const fetchJobs = async () => {
       try {
         setLoading(true);
-        // Simulate an API call delay
-        setTimeout(() => {
-          setJobs(sampleJsonResponse.jobs); // Set jobs from the mock data
-          setLoading(false);
-        }, 1000);
+        await axios({
+          method: "GET",
+          url: `/api/job`,
+          baseURL: baseBackendUrl,
+        })
+          .then((response) => {
+            const res = response.data;
+            setJobs(res);
+            setLoading(false);
+          })
+          .catch((error) => {
+            if (error.response) {
+              console.log(error.response);
+              console.log(error.response.status);
+              console.log(error.response.headers);
+            }
+          });
       } catch (error) {
-        console.error('Error fetching jobs:', error);
-        setError('Failed to fetch jobs. Please try again later.');
+        console.error("Error fetching jobs:", error);
+        setError("Failed to fetch jobs. Please try again later.");
       }
     };
 
@@ -60,24 +73,26 @@ const BrowseResults: FC = () => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
   const handleSort = (property: keyof JobInterface) => () => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
   const sortedJobs = React.useMemo(() => {
     const comparator = (a: JobInterface, b: JobInterface) => {
       if (b[orderBy] < a[orderBy]) {
-        return order === 'asc' ? 1 : -1;
+        return order === "asc" ? 1 : -1;
       }
       if (b[orderBy] > a[orderBy]) {
-        return order === 'asc' ? -1 : 1;
+        return order === "asc" ? -1 : 1;
       }
       return 0;
     };
@@ -94,22 +109,40 @@ const BrowseResults: FC = () => {
 
   return (
     <Paper className="browse-results-container">
-      <TableContainer style={{ height: '400px', overflow: 'auto' }}>
+      <TableContainer style={{ height: "70vh", overflow: "auto" }}>
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              {['title', 'company_name', 'candidate_required_location', 'category', 'salary'].map((column) => (
-                <TableCell key={column} style={{ width: columnWidths[column as keyof typeof columnWidths] }}>
+              {[
+                "title",
+                "company_name",
+                "candidate_required_location",
+                "category",
+                "salary",
+              ].map((column) => (
+                <TableCell
+                  key={column}
+                  style={{
+                    width: columnWidths[column as keyof typeof columnWidths],
+                  }}
+                >
                   <TableSortLabel
                     active={orderBy === column}
-                    direction={orderBy === column ? order : 'asc'}
+                    direction={orderBy === column ? order : "asc"}
                     onClick={handleSort(column as keyof JobInterface)}
                   >
-                    {column.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                    {column
+                      .split("_")
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                      )
+                      .join(" ")}
                   </TableSortLabel>
                 </TableCell>
               ))}
-              <TableCell style={{ width: columnWidths.action }}>ACTION</TableCell>
+              <TableCell style={{ width: columnWidths.action }}>
+                Action
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -117,11 +150,23 @@ const BrowseResults: FC = () => {
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((job: JobInterface) => (
                 <TableRow key={job.id}>
-                  <TableCell style={{ width: columnWidths.title }}>{job.title}</TableCell>
-                  <TableCell style={{ width: columnWidths.company_name }}>{job.company_name}</TableCell>
-                  <TableCell style={{ width: columnWidths.candidate_required_location }}>{job.candidate_required_location}</TableCell>
-                  <TableCell style={{ width: columnWidths.category }}>{job.category}</TableCell>
-                  <TableCell style={{ width: columnWidths.salary }}>{job.salary || "Not Listed"}</TableCell>
+                  <TableCell style={{ width: columnWidths.title }}>
+                    {job.title}
+                  </TableCell>
+                  <TableCell style={{ width: columnWidths.company_name }}>
+                    {job.company_name}
+                  </TableCell>
+                  <TableCell
+                    style={{ width: columnWidths.candidate_required_location }}
+                  >
+                    {job.candidate_required_location}
+                  </TableCell>
+                  <TableCell style={{ width: columnWidths.category }}>
+                    {job.category}
+                  </TableCell>
+                  <TableCell style={{ width: columnWidths.salary }}>
+                    {job.salary || "Not Listed"}
+                  </TableCell>
                   <TableCell style={{ width: columnWidths.action }}>
                     <Button
                       variant="outlined"

@@ -10,15 +10,19 @@ import {
 } from "@mui/material";
 
 import "./App.css";
-import { ThemeContext } from "./shared/contexts";
+import { SearchContext, ThemeContext } from "./shared/contexts";
 import Home from "./Pages/Home/Home";
 import ResultsPage from "./Pages/ResultsPage/ResultsPage";
 import BrowsePage from "./Pages/BrowsePage/BrowsePage";
 import { getDesignTokens } from "./shared/colorTheme";
 import Navbar from "./components/navbar";
+import { initialSearchValues } from "./shared/constants";
+import { SearchInterface } from "./shared/interfaces";
 
 const App: FC = () => {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const [searchValues, setSearchValues] =
+    useState<SearchInterface>(initialSearchValues);
   const [mode, setMode] = useState<PaletteMode>(
     prefersDarkMode ? "dark" : "light"
   );
@@ -46,19 +50,21 @@ const App: FC = () => {
   );
 
   return (
-    <ThemeContext.Provider value={colorMode}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <BrowserRouter>
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/results" element={<ResultsPage />} />
-            <Route path="/browse" element={<BrowsePage />} />
-          </Routes>
-        </BrowserRouter>
-      </ThemeProvider>
-    </ThemeContext.Provider>
+    <SearchContext.Provider value={{ searchValues, setSearchValues }}>
+      <ThemeContext.Provider value={colorMode}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <BrowserRouter>
+            <Navbar />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/results" element={<ResultsPage />} />
+              <Route path="/browse" element={<BrowsePage />} />
+            </Routes>
+          </BrowserRouter>
+        </ThemeProvider>
+      </ThemeContext.Provider>
+    </SearchContext.Provider>
   );
 };
 

@@ -108,3 +108,12 @@ export const sampleJsonResponse = {
     },
   ],
 };
+
+export const initialSearchValues = {
+  industryCategory: "",
+  yearsOfExperience: "",
+  city: "",
+  relevantSkills: "",
+  academicCredentials: "",
+  numberOfSearchResults: "5",
+};

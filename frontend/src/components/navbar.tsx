@@ -24,9 +24,6 @@ const Navbar: React.FC = () => {
             <Typography
               sx={{
                 display: "inline-block",
-                "&:hover": {
-                  color: "secondary.main",
-                },
               }}
             >
               Job Hunting AI Web Tool

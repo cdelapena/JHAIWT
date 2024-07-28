@@ -64,7 +64,7 @@ def fetch_external_data(api_sources: Path) -> pd.DataFrame:
 
     Returns:
         pd.DataFrame: the jobs_df; columns=[
-            "url", "title", "company_name", "logo", "category", "tags", "job_type", "date_published", "required_location", "salary", "description", "source"
+            "url", "title", "company_name", "logo", "category", "tags", "job_type", "date_published", "candidate_required_location", "salary", "description", "source"
             ]
     """
 
@@ -97,7 +97,7 @@ def fetch_external_data(api_sources: Path) -> pd.DataFrame:
                 "tags",
                 "job_type",
                 "date_published",
-                "required_location",
+                "candidate_required_location",
                 "salary",
                 "description",
             ],

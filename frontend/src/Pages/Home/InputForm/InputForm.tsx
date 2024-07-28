@@ -19,6 +19,8 @@ import * as yup from "yup";
 
 import "./InputForm.css";
 import { NumberOfSearchResultsOptions, jobs } from "./InputFormHelper";
+import { useContext } from "react";
+import { SearchContext } from "../../../shared/contexts";
 
 // schema: https://github.com/jquense/yup?tab=readme-ov-file#stringurlmessage-string--function-schema
 
@@ -40,6 +42,7 @@ const validationSchema = yup.object({
 
 const InputForm = () => {
   const navigate = useNavigate();
+  const { setSearchValues } = useContext(SearchContext);
 
   const formik = useFormik({
     initialValues: {
@@ -53,6 +56,14 @@ const InputForm = () => {
     validationSchema: validationSchema,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));
+      setSearchValues({
+        industryCategory: formik.values.industryCategory,
+        yearsOfExperience: formik.values.yearsOfExperience,
+        city: formik.values.city,
+        relevantSkills: formik.values.relevantSkills,
+        academicCredentials: formik.values.academicCredentials,
+        numberOfSearchResults: `${formik.values.numberOfSearchResults.toString()}`,
+      });
       navigate("/results");
     },
   });
