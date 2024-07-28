@@ -185,7 +185,7 @@ def upsert_new_postings(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
     df = df.drop("logo", axis=1)
     df = df.rename(
         columns={
-            "url": "source_url",
+            "url": "url",
             "title": "title",
             "date_published": "publish_date",
         }
