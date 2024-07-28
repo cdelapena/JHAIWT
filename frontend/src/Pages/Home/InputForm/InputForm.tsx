@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-
 import {
   Button,
   FormControl,
@@ -12,12 +11,11 @@ import {
   RadioGroup,
   Select,
   TextField,
+  Chip,
 } from "@mui/material";
-
 import { useFormik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
-
 import "./InputForm.css";
 import {
   NumberOfSearchResultsOptions,
@@ -36,7 +34,11 @@ const validationSchema = yup.object({
     .integer("Please enter a number")
     .required("Years of experience is required"),
   city: yup.string().required("City is required"),
-  relevantSkills: yup.string().required("Relevant skills are required"),
+  relevantSkills: yup
+    .array()
+    .of(yup.string())
+    .min(1, "Relevant skills are required")
+    .required("Relevant skills are required"),
   academicCredentials: yup
     .string()
     .required("Academic credentials are required"),
@@ -51,13 +53,15 @@ const InputForm = () => {
   const [jobs, setJobs] = useState<JobCategoryInterface[]>([
     { id: 0, name: "API Unavailable" },
   ]);
+  const [skills, setSkills] = useState<string[]>([]);
+  const [open, setOpen] = useState<boolean>(false);
 
   const formik = useFormik({
     initialValues: {
       industryCategory: "",
       yearsOfExperience: "",
       city: "",
-      relevantSkills: "",
+      relevantSkills: [] as string[],
       academicCredentials: "",
       numberOfSearchResults: NumberOfSearchResultsOptions.Option1,
     },
@@ -68,7 +72,7 @@ const InputForm = () => {
         industryCategory: formik.values.industryCategory,
         yearsOfExperience: formik.values.yearsOfExperience,
         city: formik.values.city,
-        relevantSkills: formik.values.relevantSkills,
+        relevantSkills: formik.values.relevantSkills.join(", "),
         academicCredentials: formik.values.academicCredentials,
         numberOfSearchResults: `${formik.values.numberOfSearchResults.toString()}`,
       });
@@ -98,6 +102,41 @@ const InputForm = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const fetchTags = async () => {
+    await axios({
+      method: "GET",
+      url: `/api/tag`,
+      baseURL: baseBackendUrl,
+    })
+      .then((response) => {
+        const res = response.data.map((tag: { name: string }) => tag.name);
+        setSkills(res);
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
+  };
+
+  useEffect(() => {
+    fetchTags();
+  }, []);
+
+  const handleRelevantSkillsChange = (event: any) => {
+    const {
+      target: { value },
+    } = event;
+    formik.setFieldValue("relevantSkills", typeof value === "string" ? value.split(",") : value);
+    setOpen(false);
+  };
+
+  const handleRelevantSkillsClick = () => {
+    setOpen(!open);
+  };
 
   return (
     <div className="input-form-container">
@@ -167,22 +206,42 @@ const InputForm = () => {
           error={formik.touched.city && Boolean(formik.errors.city)}
           helperText={formik.touched.city && formik.errors.city}
         />
-        <TextField
-          id="relevantSkills"
+        <FormControl
           className="input-form"
-          name="relevantSkills"
-          label="Relevant Skills"
-          value={formik.values.relevantSkills}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
           error={
             formik.touched.relevantSkills &&
             Boolean(formik.errors.relevantSkills)
           }
-          helperText={
-            formik.touched.relevantSkills && formik.errors.relevantSkills
-          }
-        />
+        >
+          <InputLabel id="relevantSkillsLabel">Relevant Skills</InputLabel>
+          <Select
+            labelId="relevantSkillsLabel"
+            id="relevantSkillsSelect"
+            multiple
+            open={open}
+            onClose={() => setOpen(false)}
+            onOpen={handleRelevantSkillsClick}
+            value={formik.values.relevantSkills}
+            onChange={handleRelevantSkillsChange}
+            onBlur={formik.handleBlur}
+            renderValue={(selected) => (
+              <div>
+                {(selected as string[]).map((value) => (
+                  <Chip key={value} label={value} sx={{ margin: 0.5 }} />
+                ))}
+              </div>
+            )}
+          >
+            {skills.map((skill) => (
+              <MenuItem key={skill} value={skill}>
+                {skill}
+              </MenuItem>
+            ))}
+          </Select>
+          <FormHelperText>
+            {formik.touched.relevantSkills && formik.errors.relevantSkills}
+          </FormHelperText>
+        </FormControl>
         <TextField
           id="academicCredentials"
           className="input-form"
