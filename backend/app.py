@@ -35,8 +35,8 @@ def get_all_jobs():
 def get_filtered_jobs():
     data = request.get_json()
     print(f"POST /api/job/results with data: {data}")
-    # Implement logic to filter jobs based on received data
-    # response = sprocs.get_filtered_job_postings("Job.db", data)
+    # Still need to figure out how to pass to model
+    response = sprocs.get_filtered_job_postings("Job.db", data)
     response = {"message": "Filtered jobs based on relevant skills"}
     print("SUCCESS")
     return jsonify(response)
