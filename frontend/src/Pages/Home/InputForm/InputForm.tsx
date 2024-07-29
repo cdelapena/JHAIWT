@@ -13,8 +13,11 @@ import {
   Select,
   TextField,
   Chip,
-  Autocomplete,
+  Box,
+  IconButton,
 } from "@mui/material";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
@@ -74,6 +77,7 @@ const InputForm = () => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
+    onSubmit: async (values) => {
       setSearchValues({
         industryCategory: formik.values.industryCategory,
         yearsOfExperience: formik.values.yearsOfExperience,
@@ -83,8 +87,17 @@ const InputForm = () => {
         userText: formik.values.userText,
         numberOfSearchResults: `${formik.values.numberOfSearchResults.toString()}`,
       });
-
-      navigate("/results");
+  try {
+        await axios.post(`${baseBackendUrl}/api/job/results`, values);
+        try {
+        await axios.post(`${baseBackendUrl}/api/job/results`, values);
+        navigate("/results");
+      } catch (error) {
+        console.error("Error submitting form data", error);
+      }
+      } catch (error) {
+        console.error("Error submitting form data", error);
+      }
     },
   });
 
@@ -131,8 +144,31 @@ const InputForm = () => {
       });
   };
 
-  const handleRelevantSkillsChange = (event: any, value: string[]) => {
-    formik.setFieldValue("relevantSkills", value);
+  useEffect(() => {
+    fetchTags();
+  }, []);
+
+  useEffect(() => {
+    fetchTags();
+  }, []);
+
+  const handleRelevantSkillsChange = (event: any) => {
+    const {
+      target: { value },
+    } = event;
+    formik.setFieldValue("relevantSkills", typeof value === "string" ? value.split(",") : value);
+    setOpen(false);
+  };
+
+
+  const handleDropdownIconClick = (event: any) => {
+    event.stopPropagation();
+    setOpen(!open);
+  };
+
+  const handleDropdownIconClick = (event: any) => {
+    event.stopPropagation();
+    setOpen(!open);
   };
 
   return (
@@ -201,43 +237,55 @@ const InputForm = () => {
           helperText={formik.touched.city && formik.errors.city}
         />
         <FormControl
-          className="input-form"
+          className="input-form hide-arrow"
           error={
             formik.touched.relevantSkills &&
             Boolean(formik.errors.relevantSkills)
           }
         >
-          <Autocomplete
-            multiple
-            id="tags-outlined"
-            options={skills}
-            getOptionLabel={(option) => option}
-            value={formik.values.relevantSkills}
-            onChange={handleRelevantSkillsChange}
-            filterSelectedOptions
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                error={
-                  formik.touched.relevantSkills &&
-                  Boolean(formik.errors.relevantSkills)
-                }
-                variant="outlined"
-                label="Relevant Skills"
-                placeholder="Select Skills"
-                name="relevantSkills"
-              />
-            )}
-            renderTags={(value: string[], getTagProps) =>
-              value.map((option: string, index: number) => (
-                <Chip
-                  variant="outlined"
-                  label={option}
-                  {...getTagProps({ index })}
-                />
-              ))
-            }
-          />
+          <InputLabel id="relevantSkillsLabel">Relevant Skills</InputLabel>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Select
+              labelId="relevantSkillsLabel"
+              id="relevantSkillsSelect"
+              multiple
+              open={open}
+              onClose={() => setOpen(false)}
+              value={formik.values.relevantSkills}
+              onChange={handleRelevantSkillsChange}
+              onBlur={formik.handleBlur}
+              renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {(selected as string[]).map((value) => (
+                    <Chip
+                      key={value}
+                      label={value}
+                      onDelete={(event) => {
+                        event.stopPropagation();
+                        formik.setFieldValue(
+                          "relevantSkills",
+                          formik.values.relevantSkills.filter((skill) => skill !== value)
+                        );
+                      }}
+                      sx={{ margin: 0.5 }}
+                    />
+                  ))}
+                </Box>
+              )}
+              IconComponent={() => (
+                <IconButton onClick={handleDropdownIconClick} sx={{ padding: 0 }}>
+                  <ArrowDropDownIcon />
+                </IconButton>
+              )}
+              sx={{ flex: 1 }}
+            >
+              {skills.map((skill) => (
+                <MenuItem key={skill} value={skill}>
+                  {skill}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
           <FormHelperText>
             {formik.touched.relevantSkills && formik.errors.relevantSkills}
           </FormHelperText>
