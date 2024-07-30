@@ -2,6 +2,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 import sqlite3
 import pandas as pd
+import numpy as np
 from utils.data_cleaning.text_preprocessing import preprocess_text
 from utils.sql.make_db import init_tables
 
@@ -124,123 +125,160 @@ def upsert_new_postings(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
         df (pd.DataFrame): jobs_df from fetch_external_data
         conn (sqlite3.Connection): inject dependency
     """
+    url_df = df[["url"]].copy()
 
-    # # Inactive old records...
-    # db_df = pd.read_sql("SELECT url FROM positions WHERE inactive_date_utc = NULL", conn)
-    # db_df = db_df.astype(pd.StringDtype())
+    # Inactive old records...
+    urls_from_api = set(url_df["url"].unique())
 
-    # check_df = df[["url"]].copy()
-    # inactivate_df = pd.merge(check_df, db_df, how="outer", indicator=True)
-    # check_df = inactivate_df[inactivate_df["_merge"] == "left_only"]
+    # Subtract records from the DB that are not in the API call
+    active_urls = set()
+    db_active_urls = pd.read_sql("SELECT url FROM postings WHERE inactive_date_utc = 'None' GROUP BY url", conn)
+    if not db_active_urls.empty:
+        active_urls = set(db_active_urls["url"])
 
-    # inactive_date = datetime.now(timezone.utc)
-    # check_df["inactive_date_utc"] = inactive_date
-    # check_df = check_df.astype(pd.StringDType())
+    del db_active_urls
 
-    # Add the tags FK to the df...
-    source_df = pd.read_sql("SELECT id, name FROM sources;", conn)
-    source_df["name"] = source_df["name"].astype(pd.StringDtype())
+    inactivate = active_urls - urls_from_api
 
-    df = df.rename(columns={"source": "name"})
+    # Constrain inactivation df to proper subset and set datetime
+    if inactivate:
+        quant = len(inactivate)
+        print(f"\t-> Inactivating {quant} record(s) in [Job].[postings]...")
+        # Batchify updates
+        batch_size = 200
+        url_batches = [list(inactivate)[i:i+batch_size] for i in range(0, quant, batch_size)]
 
-    print("\t-> Getting [Job].[sources] FKs...")
-    df = df.merge(source_df, on="name", how="inner")
-    df = df.drop("name", axis=1)
-    df = df.rename(columns={"id": "source_id"})
+        inactive_date = datetime.now(timezone.utc)
 
-    del source_df
-
-    # Add the category FK to the df...
-    category_df = pd.read_sql("SELECT id, name FROM categories;", conn)
-    category_df["name"] = category_df["name"].astype(pd.StringDtype())
-
-    df = df.rename(columns={"category": "name"})
-
-    print("\t-> Getting [Job].[categories] FKs...")
-    df = df.merge(category_df, on="name", how="inner")
-    df = df.drop("name", axis=1)
-    df = df.rename(columns={"id": "category_id"})
-
-    del category_df
-
-    # Add the tags FK to the df...
-    tags_df = pd.read_sql("SELECT id, name FROM tags;", conn)
-
-    print("\t-> Getting [Job].[tags] FKs...")
-    df = df.rename(columns={"tags": "name"})
-    df = df.merge(tags_df, on="name", how="inner")
-    df = df.drop("name", axis=1)
-    df = df.rename(columns={"id": "tag_id"})
-
-    del tags_df
-
-    # Add timestamps...
-    utc_now = datetime.now(timezone.utc)
-    df["active_date_utc"] = utc_now.strftime("%Y-%m-%dT%H:%M:%SZ")
-    df["active_date_utc"] = df["active_date_utc"].astype(pd.StringDtype())
-    df["inactive_date_utc"] = None
-    df["inactive_date_utc"] = df["inactive_date_utc"].astype(pd.StringDtype())
-
-    # Final cleaning of the df
-    df = df.drop("logo", axis=1)
-    df = df.rename(
-        columns={
-            "url": "url",
-            "title": "title",
-            "date_published": "publish_date",
-        }
-    )
-    df.fillna(value="None", inplace=True)
-
-    # Add a temporary ID for processing
-    df["temp_id"] = df.index
-
-    # Preprocess the descriptions before upserting
-    print("\t->Preprocessing description text for use by recommendation engine...")
-    try:
-        descriptions_preprocessed = preprocess_text(df[["temp_id", "description"]])
-    except Exception as e:
-        print(f"Error during preprocessing: {e}")
-        raise
-
-    try:
-        df_preprocessed = pd.DataFrame(descriptions_preprocessed)
-    except Exception as e:
-        print(f"Error creating DataFrame from preprocessed descriptions: {e}")
-        raise
-
-    try:
-        df = df.merge(
-            df_preprocessed[["temp_id", "preprocessed_description"]], on="temp_id"
-        )
-        df.drop("temp_id", axis=1, inplace=True)
-    except Exception as e:
-        print(f"Error merging preprocessed descriptions: {e}")
-        raise
-    print("\t->preprocessed_description field complete.")
-
-    # Convert DataFrame to a list of tuples
-    postings = df.to_records(index=False).tolist()
-
-    # Prepare the SQL statement
-    columns = ", ".join(df.columns)
-    placeholders = ", ".join(["?" for _ in df.columns])
-    conflict_update = ", ".join(
-        [f"{col} = excluded.{col}" for col in df.columns if col != "url"]
-    )
-
-    sql = f"""
-INSERT INTO postings ({columns})
-VALUES ({placeholders})
-ON CONFLICT(id) DO UPDATE SET
-    {conflict_update}
+        # Update db records with SQL command
+        inactivate_sql = """
+UPDATE postings
+SET inactive_date_utc = ?
+WHERE url = ?
 """
+        cursor = conn.cursor()
+        for batch in url_batches:
+            inactivate_data = [(inactive_date, url) for url in batch]
+            cursor.executemany(inactivate_sql, inactivate_data)
+            conn.commit()
+        cursor.close()
 
-    # Execute the upsert
-    print(f"\t-> Upserting {len(df)} record(s) into [Job].[postings]...")
-    cursor = conn.cursor()
-    cursor.executemany(sql, postings)
-    conn.commit()
+    else:
+        print("\t-> No previous postings require inactivation...")
+
+    # Constrain full df to only new records from API call
+    new_urls = urls_from_api - active_urls - inactivate
+
+    new_df = df[df["url"].isin(new_urls)]
+    new_df = new_df.dropna(subset=["tags"])
+    if len(new_df) > 0:
+        print(f"\t-> {len(new_df)} valid new postings have been found. Preparing for ingestion...")
+
+        # Add the tags FK to the df...
+        source_df = pd.read_sql("SELECT id, name FROM sources;", conn)
+        source_df["name"] = source_df["name"].astype(pd.StringDtype())
+
+        new_df = new_df.rename(columns={"source": "name"})
+
+        print("\t-> Getting [Job].[sources] FKs...")
+        new_df = new_df.merge(source_df, on="name", how="inner")
+        new_df = new_df.drop("name", axis=1)
+        new_df = new_df.rename(columns={"id": "source_id"})
+
+        del source_df
+
+        # Add the category FK to the df...
+        category_df = pd.read_sql("SELECT id, name FROM categories;", conn)
+        category_df["name"] = category_df["name"].astype(pd.StringDtype())
+
+        new_df = new_df.rename(columns={"category": "name"})
+
+        print("\t-> Getting [Job].[categories] FKs...")
+        new_df = new_df.merge(category_df, on="name", how="inner")
+        new_df = new_df.drop("name", axis=1)
+        new_df = new_df.rename(columns={"id": "category_id"})
+
+        del category_df
+
+        # Add the tags FK to the df...
+        tags_df = pd.read_sql("SELECT id, name FROM tags;", conn)
+
+        print("\t-> Getting [Job].[tags] FKs...")
+        new_df = new_df.rename(columns={"tags": "name"})
+        new_df = new_df.merge(tags_df, on="name", how="inner")
+        new_df = new_df.drop("name", axis=1)
+        new_df = new_df.rename(columns={"id": "tag_id"})
+
+        del tags_df
+
+        # Add timestamps...
+        utc_now = datetime.now(timezone.utc)
+        new_df["active_date_utc"] = utc_now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        new_df["active_date_utc"] = new_df["active_date_utc"].astype(pd.StringDtype())
+        new_df["inactive_date_utc"] = None
+        new_df["inactive_date_utc"] = new_df["inactive_date_utc"].astype(pd.StringDtype())
+
+        # Final cleaning of the df
+        new_df = new_df.drop("logo", axis=1)
+        new_df = new_df.rename(
+            columns={
+                "url": "url",
+                "date_published": "publish_date",
+            }
+        )
+        new_df.fillna(value="None", inplace=True)
+
+        # Add a temporary ID for processing
+        new_df["temp_id"] = new_df.index
+
+        # Preprocess the descriptions before upserting
+        print("\t->Preprocessing description text for use by recommendation engine...")
+        try:
+            descriptions_preprocessed = preprocess_text(new_df[["temp_id", "description"]])
+        except Exception as e:
+            print(f"Error during preprocessing: {e}")
+            raise
+
+        try:
+            df_preprocessed = pd.DataFrame(descriptions_preprocessed)
+        except Exception as e:
+            print(f"Error creating DataFrame from preprocessed descriptions: {e}")
+            raise
+
+        try:
+            new_df = new_df.merge(
+                df_preprocessed[["temp_id", "preprocessed_description"]], on="temp_id"
+            )
+            new_df.drop("temp_id", axis=1, inplace=True)
+        except Exception as e:
+            print(f"Error merging preprocessed descriptions: {e}")
+            raise
+        print("\t->preprocessed_description field complete.")
+
+        # Convert DataFrame to a list of tuples
+        postings = new_df.to_records(index=False).tolist()
+
+        # Prepare the SQL statement
+        columns = ", ".join(new_df.columns)
+        placeholders = ", ".join(["?" for _ in new_df.columns])
+        conflict_update = ", ".join(
+            [f"{col} = excluded.{col}" for col in new_df.columns if col != "url"]
+        )
+
+        sql = f"""
+    INSERT INTO postings ({columns})
+    VALUES ({placeholders})
+    ON CONFLICT(id) DO UPDATE SET
+        {conflict_update}
+    """
+
+        # Execute the upsert
+        print(f"\t-> Upserting {len(new_df)} record(s) into [Job].[postings]...")
+        cursor = conn.cursor()
+        cursor.executemany(sql, postings)
+        conn.commit()
+    else:
+        print("\t->No new posting records.")
     print("db ingestion complete.")
     return
 

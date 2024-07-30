@@ -1,7 +1,9 @@
+import sys
 from flask import Flask, make_response, jsonify
 from flask_cors import CORS, cross_origin
 from fetch_external_data import return_clean_json_data
 import sprocs
+import jobs_ingestion
 from utils.data_cleaning.text_preprocessing import preprocess_text
 from utils.sql.sql import MultipleRecordsFound
 
@@ -71,4 +73,11 @@ def get_all_categories():
 
 
 if __name__ == "__main__":
+    # Set-up db at Flask initialization
+    try:
+        jobs_ingestion.main()
+    except RuntimeError as e:
+        err = f"ERROR: {e}"
+        sys.exit()
+
     app.run(port=8080)
