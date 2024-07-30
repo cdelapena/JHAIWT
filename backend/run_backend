@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+# Check if a port number is provided
+if [ $# -eq 0 ]; then
+    echo "No port number supplied. Usage: ./run_backend.sh <port>"
+    exit 1
+fi
+
+PORT=$1 # Get the specified port
+
+echo "Building envirnoment and gathering all dependencies..."
+chmod +x build_backend_env
+./build_backend_env
+
+echo "Activating environment..."
+source .venv/bin/activate
+
+# Start Gunicorn
+echo "Starting Gunicorn..."
+gunicorn -w 4 -b "0.0.0.0:$PORT" app:app
