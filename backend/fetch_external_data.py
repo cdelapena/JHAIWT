@@ -120,8 +120,7 @@ def fetch_external_data(api_sources: Path) -> pd.DataFrame:
         for line in data_src_fh.readlines():
             src_data = line.split(",")
             src, url = src_data
-            match src:
-                case "remotive":
-                    jobs_df = get_remotive_jobs(url)
+            if src == "remotive":
+                jobs_df = get_remotive_jobs(url)
 
     return jobs_df
