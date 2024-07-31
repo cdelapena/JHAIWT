@@ -17,7 +17,6 @@ import {
   Chip,
   Autocomplete,
 } from "@mui/material";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { styled } from "@mui/system";
 import { useFormik } from "formik";
 import * as yup from "yup";
@@ -65,7 +64,6 @@ const InputForm = () => {
     { id: 0, name: "API Unavailable" },
   ]);
   const [skills, setSkills] = useState<string[]>([]);
-  const [open, setOpen] = useState<boolean>(false);
   const [autoCompleteFocus, setAutoCompleteFocus] = useState<boolean>(false);
 
   const formik = useFormik({
@@ -118,6 +116,7 @@ const InputForm = () => {
 
   useEffect(() => {
     fetchData();
+    fetchTags();
   }, []);
 
   const fetchTags = async () => {
@@ -139,9 +138,6 @@ const InputForm = () => {
       });
   };
 
-  useEffect(() => {
-    fetchTags();
-  }, []);
 
   const handleRelevantSkillsChange = (event: any, value: string[]) => {
     formik.setFieldValue("relevantSkills", value);
@@ -238,6 +234,7 @@ const InputForm = () => {
                 variant="outlined"
                 label="Relevant Skills"
                 placeholder="Select Skills"
+                name="relevantSkills"
                 InputLabelProps={{
                   shrink: autoCompleteFocus || formik.values.relevantSkills.length > 0,
                 }}

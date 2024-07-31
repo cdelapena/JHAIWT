@@ -1,3 +1,4 @@
+import sys
 from flask import Flask, make_response, jsonify, request
 from flask_cors import CORS, cross_origin
 from fetch_external_data import return_clean_json_data
@@ -37,7 +38,7 @@ def get_filtered_jobs():
     data = request.get_json()
     print(f"POST /api/job/results with data: {data}")
     # Still need to figure out how to pass to model
-    response = sprocs.get_filtered_job_postings("Job.db", data)
+    # response = sprocs.get_filtered_job_postings("Job.db", data)
     response = {"message": "Filtered jobs based on relevant skills"}
     print("SUCCESS")
     return jsonify(response)
