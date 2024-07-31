@@ -11,13 +11,9 @@ import {
   RadioGroup,
   Select,
   TextField,
-  Box,
-  IconButton,
-  CssBaseline,
   Chip,
   Autocomplete,
 } from "@mui/material";
-import { styled } from "@mui/system";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
@@ -29,13 +25,6 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { SearchContext } from "../../../shared/contexts";
 import { baseBackendUrl } from "../../../shared/urls";
-
-const Root = styled('div')(({ theme }) => ({
-  width: '100%',
-  "& > * + *": {
-    marginTop: theme.spacing(3),
-  },
-}));
 
 const validationSchema = yup.object({
   industryCategory: yup.string().required("Industry Category is required"),
@@ -64,7 +53,6 @@ const InputForm = () => {
     { id: 0, name: "API Unavailable" },
   ]);
   const [skills, setSkills] = useState<string[]>([]);
-  const [autoCompleteFocus, setAutoCompleteFocus] = useState<boolean>(false);
 
   const formik = useFormik({
     initialValues: {
@@ -114,11 +102,6 @@ const InputForm = () => {
       });
   };
 
-  useEffect(() => {
-    fetchData();
-    fetchTags();
-  }, []);
-
   const fetchTags = async () => {
     await axios({
       method: "GET",
@@ -138,13 +121,17 @@ const InputForm = () => {
       });
   };
 
+  useEffect(() => {
+    fetchData();
+    fetchTags();
+  }, []);
 
   const handleRelevantSkillsChange = (event: any, value: string[]) => {
     formik.setFieldValue("relevantSkills", value);
   };
 
   return (
-    <Root className="input-form-container">
+    <div className="input-form-container">
       <form onSubmit={formik.handleSubmit}>
         <FormControl className="input-form" id="industryCategoryFormControl">
           <InputLabel
@@ -225,8 +212,6 @@ const InputForm = () => {
             getOptionLabel={(option) => option}
             value={formik.values.relevantSkills}
             onChange={handleRelevantSkillsChange}
-            onFocus={() => setAutoCompleteFocus(true)}
-            onBlur={() => setAutoCompleteFocus(false)}
             filterSelectedOptions
             renderInput={(params) => (
               <TextField
@@ -235,19 +220,20 @@ const InputForm = () => {
                 label="Relevant Skills"
                 placeholder="Select Skills"
                 name="relevantSkills"
-                InputLabelProps={{
-                  shrink: autoCompleteFocus || formik.values.relevantSkills.length > 0,
-                }}
               />
             )}
             renderTags={(value: string[], getTagProps) =>
-              value.map((option: string, index: number) => (
-                <Chip
-                  variant="outlined"
-                  label={option}
-                  {...getTagProps({ index })}
-                />
-              ))
+              value.map((option: string, index: number) => {
+                const { key, ...tagProps } = getTagProps({ index });
+                return (
+                  <Chip
+                    key={key}
+                    variant="outlined"
+                    label={option}
+                    {...tagProps}
+                  />
+                );
+              })
             }
           />
           <FormHelperText>
@@ -314,7 +300,7 @@ const InputForm = () => {
           Search
         </Button>
       </form>
-    </Root>
+    </div>
   );
 };
 

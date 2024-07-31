@@ -1,4 +1,4 @@
-export const flaskApiUrl = "";
+export const flaskApiUrl = "http://classwork.engr.oregonstate.edu:13145";
 
 const regex = new RegExp("localhost");
 
