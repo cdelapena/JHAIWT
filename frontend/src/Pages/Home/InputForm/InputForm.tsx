@@ -173,6 +173,7 @@ const InputForm = () => {
 
   return (
     <div className="input-form-container">
+    <div className="input-form-container">
       <form onSubmit={formik.handleSubmit}>
         <FormControl className="input-form" id="industryCategoryFormControl">
           <InputLabel
@@ -361,6 +362,7 @@ const InputForm = () => {
           Search
         </Button>
       </form>
+    </div>
     </div>
   );
 };
