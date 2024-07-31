@@ -11,11 +11,14 @@ import {
   RadioGroup,
   Select,
   TextField,
-  Chip,
   Box,
   IconButton,
+  CssBaseline,
+  Chip,
+  Autocomplete,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { styled } from "@mui/system";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
@@ -27,6 +30,13 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { SearchContext } from "../../../shared/contexts";
 import { baseBackendUrl } from "../../../shared/urls";
+
+const Root = styled('div')(({ theme }) => ({
+  width: '100%',
+  "& > * + *": {
+    marginTop: theme.spacing(3),
+  },
+}));
 
 const validationSchema = yup.object({
   industryCategory: yup.string().required("Industry Category is required"),
@@ -56,6 +66,7 @@ const InputForm = () => {
   ]);
   const [skills, setSkills] = useState<string[]>([]);
   const [open, setOpen] = useState<boolean>(false);
+  const [autoCompleteFocus, setAutoCompleteFocus] = useState<boolean>(false);
 
   const formik = useFormik({
     initialValues: {
@@ -132,22 +143,12 @@ const InputForm = () => {
     fetchTags();
   }, []);
 
-  const handleRelevantSkillsChange = (event: any) => {
-    const {
-      target: { value },
-    } = event;
-    formik.setFieldValue("relevantSkills", typeof value === "string" ? value.split(",") : value);
-    setOpen(false);
-  };
-
-
-  const handleDropdownIconClick = (event: any) => {
-    event.stopPropagation();
-    setOpen(!open);
+  const handleRelevantSkillsChange = (event: any, value: string[]) => {
+    formik.setFieldValue("relevantSkills", value);
   };
 
   return (
-    <div className="input-form-container">
+    <Root className="input-form-container">
       <form onSubmit={formik.handleSubmit}>
         <FormControl className="input-form" id="industryCategoryFormControl">
           <InputLabel
@@ -215,55 +216,43 @@ const InputForm = () => {
           helperText={formik.touched.city && formik.errors.city}
         />
         <FormControl
-          className="input-form hide-arrow"
+          className="input-form"
           error={
             formik.touched.relevantSkills &&
             Boolean(formik.errors.relevantSkills)
           }
         >
-          <InputLabel id="relevantSkillsLabel">Relevant Skills</InputLabel>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Select
-              labelId="relevantSkillsLabel"
-              id="relevantSkillsSelect"
-              multiple
-              open={open}
-              onClose={() => setOpen(false)}
-              value={formik.values.relevantSkills}
-              onChange={handleRelevantSkillsChange}
-              onBlur={formik.handleBlur}
-              renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {(selected as string[]).map((value) => (
-                    <Chip
-                      key={value}
-                      label={value}
-                      onDelete={(event) => {
-                        event.stopPropagation();
-                        formik.setFieldValue(
-                          "relevantSkills",
-                          formik.values.relevantSkills.filter((skill) => skill !== value)
-                        );
-                      }}
-                      sx={{ margin: 0.5 }}
-                    />
-                  ))}
-                </Box>
-              )}
-              IconComponent={() => (
-                <IconButton onClick={handleDropdownIconClick} sx={{ padding: 0 }}>
-                  <ArrowDropDownIcon />
-                </IconButton>
-              )}
-              sx={{ flex: 1 }}
-            >
-              {skills.map((skill) => (
-                <MenuItem key={skill} value={skill}>
-                  {skill}
-                </MenuItem>
-              ))}
-            </Select>
-          </Box>
+          <Autocomplete
+            multiple
+            id="tags-outlined"
+            options={skills}
+            getOptionLabel={(option) => option}
+            value={formik.values.relevantSkills}
+            onChange={handleRelevantSkillsChange}
+            onFocus={() => setAutoCompleteFocus(true)}
+            onBlur={() => setAutoCompleteFocus(false)}
+            filterSelectedOptions
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                label="Relevant Skills"
+                placeholder="Select Skills"
+                InputLabelProps={{
+                  shrink: autoCompleteFocus || formik.values.relevantSkills.length > 0,
+                }}
+              />
+            )}
+            renderTags={(value: string[], getTagProps) =>
+              value.map((option: string, index: number) => (
+                <Chip
+                  variant="outlined"
+                  label={option}
+                  {...getTagProps({ index })}
+                />
+              ))
+            }
+          />
           <FormHelperText>
             {formik.touched.relevantSkills && formik.errors.relevantSkills}
           </FormHelperText>
@@ -328,7 +317,7 @@ const InputForm = () => {
           Search
         </Button>
       </form>
-    </div>
+    </Root>
   );
 };
 
