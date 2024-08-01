@@ -17,7 +17,6 @@ import {
   Chip,
   Autocomplete,
 } from "@mui/material";
-import { styled } from "@mui/system";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
@@ -29,13 +28,6 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { SearchContext } from "../../../shared/contexts";
 import { baseBackendUrl } from "../../../shared/urls";
-
-const Root = styled('div')(({ theme }) => ({
-  width: '100%',
-  "& > * + *": {
-    marginTop: theme.spacing(3),
-  },
-}));
 
 const validationSchema = yup.object({
   industryCategory: yup.string().required("Industry Category is required"),
@@ -64,7 +56,6 @@ const InputForm = () => {
     { id: 0, name: "API Unavailable" },
   ]);
   const [skills, setSkills] = useState<string[]>([]);
-  const [autoCompleteFocus, setAutoCompleteFocus] = useState<boolean>(false);
 
   const formik = useFormik({
     initialValues: {
@@ -138,13 +129,12 @@ const InputForm = () => {
       });
   };
 
-
   const handleRelevantSkillsChange = (event: any, value: string[]) => {
     formik.setFieldValue("relevantSkills", value);
   };
 
   return (
-    <Root className="input-form-container">
+    <div className="input-form-container">
       <form onSubmit={formik.handleSubmit}>
         <FormControl className="input-form" id="industryCategoryFormControl">
           <InputLabel
@@ -166,7 +156,6 @@ const InputForm = () => {
             value={formik.values.industryCategory}
             label="Industry Category"
             onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
             error={
               formik.touched.industryCategory &&
               Boolean(formik.errors.industryCategory)
@@ -191,7 +180,6 @@ const InputForm = () => {
           type="number"
           value={formik.values.yearsOfExperience}
           onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
           error={
             formik.touched.yearsOfExperience &&
             Boolean(formik.errors.yearsOfExperience)
@@ -207,7 +195,6 @@ const InputForm = () => {
           label="City"
           value={formik.values.city}
           onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
           error={formik.touched.city && Boolean(formik.errors.city)}
           helperText={formik.touched.city && formik.errors.city}
         />
@@ -225,8 +212,6 @@ const InputForm = () => {
             getOptionLabel={(option) => option}
             value={formik.values.relevantSkills}
             onChange={handleRelevantSkillsChange}
-            onFocus={() => setAutoCompleteFocus(true)}
-            onBlur={() => setAutoCompleteFocus(false)}
             filterSelectedOptions
             renderInput={(params) => (
               <TextField
@@ -235,9 +220,6 @@ const InputForm = () => {
                 label="Relevant Skills"
                 placeholder="Select Skills"
                 name="relevantSkills"
-                InputLabelProps={{
-                  shrink: autoCompleteFocus || formik.values.relevantSkills.length > 0,
-                }}
               />
             )}
             renderTags={(value: string[], getTagProps) =>
@@ -261,7 +243,6 @@ const InputForm = () => {
           label="Academic Credentials"
           value={formik.values.academicCredentials}
           onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
           error={
             formik.touched.academicCredentials &&
             Boolean(formik.errors.academicCredentials)
@@ -280,7 +261,6 @@ const InputForm = () => {
             name="numberOfSearchResults"
             sx={{ justifyContent: "center" }}
             onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
             value={formik.values.numberOfSearchResults}
           >
             <FormControlLabel
@@ -314,7 +294,7 @@ const InputForm = () => {
           Search
         </Button>
       </form>
-    </Root>
+    </div>
   );
 };
 
