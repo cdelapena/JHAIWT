@@ -300,17 +300,14 @@ def get_model_data_by_category(category_id: int, db_filename: str) -> list:
 
 @timer
 def get_recommended_job_postings(job_ids: List[int], db_filename: str) -> list:
-    """Gets single record by id
+    """Gets all recommended job postings
 
     Args:
-        job_id (int): [Job.db].[postings].id
+        job_ids (List[int]): [[Job.db].[postings].id, ...]
         db_filename (str): db for connection
 
-    Raises:
-        MultipleRecordsFound: custom error class
-
     Returns:
-        list: db record [id, title, description, category, company, salary, tags, job_type, url, publish_date, candidate_required_location]
+        list: db records [id, title, description, category, company, salary, tags, job_type, url, publish_date, candidate_required_location]
     """
     cast_to_string = [f"{i}" for i in job_ids]
     job_ids_str = ",".join(cast_to_string)
