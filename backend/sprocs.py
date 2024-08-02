@@ -61,7 +61,8 @@ def get_all_job_postings(db_filename: str) -> list:
                 publish_date,
                 candidate_required_location
                 FROM postings p
-                    JOIN tags t ON t.id = p.tag_id
+                    JOIN postingtags pt ON pt.posting_id = p.id
+                    JOIN tags t ON t.id = pt.tag_id
                     JOIN categories c ON c.id = p.category_id
                 WHERE p.inactive_date_utc IS NOT NULL
                 GROUP BY
@@ -130,7 +131,8 @@ def get_some_job_postings(db_filename: str, number: int) -> list:
                 publish_date,
                 candidate_required_location
                 FROM postings p
-                    JOIN tags t ON t.id = p.tag_id
+                    JOIN postingtags pt ON pt.posting_id = p.id
+                    JOIN tags t ON t.id = pt.tag_id
                     JOIN categories c ON c.id = p.category_id
                 WHERE p.inactive_date_utc IS NOT NULL
                 GROUP BY
@@ -196,7 +198,8 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
                 publish_date,
                 candidate_required_location
                 FROM postings p
-                    JOIN tags t ON t.id = p.tag_id
+                    JOIN postingtags pt ON pt.posting_id = p.id
+                    JOIN tags t ON t.id = pt.tag_id
                     JOIN categories c ON c.id = p.category_id
                 WHERE p.inactive_date_utc IS NOT NULL
                     AND p.id = {job_id}
@@ -243,19 +246,16 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
 
 
 @timer
-def get_model_data_by_category(categories: str, db_filename: str) -> list:
-    """Gathers model-specific data by job category name
+def get_model_data_by_category(category_id: int, db_filename: str) -> list:
+    """Gathers model-specific data by job category id
 
     Args:
-        categories (str): comma-sep string of categories
+        categories (int): Job.categories.id
         db_filename (str): db for connection
 
     Returns:
         list: db records [id, category, title, preprocessed_description, tags]
     """
-    items = [item.strip() for item in categories.split(",")]
-    category_req = ", ".join(f"'{item}'" for item in items)
-
     query = f"""
         SELECT
             p.id,
@@ -263,11 +263,12 @@ def get_model_data_by_category(categories: str, db_filename: str) -> list:
             title,
             preprocessed_description,
             GROUP_CONCAT(t.name, ', ') AS tags
-            FROM postings p
-                JOIN tags t ON t.id = p.tag_id
-                JOIN categories c ON c.id = p.category_id
+            FROM categories c
+                JOIN postings p ON P.category_id = c.id
+                JOIN postingtags pt ON pt.posting_id = p.id
+                JOIN tags t ON t.id = pt.tag_id
             WHERE p.inactive_date_utc IS NOT NULL
-                AND c.name IN ({category_req})
+                AND c.id = {category_id}
             GROUP BY
             p.id,
             c.name,
@@ -279,7 +280,7 @@ def get_model_data_by_category(categories: str, db_filename: str) -> list:
     conn = get_connection(db_filename)
     with conn:
         cursor = conn.cursor()
-        print(f"Executing getModelDataByCategory, ({category_req}) sproc...")
+        print(f"Executing getModelDataByCategory, ({category_id}) sproc...")
         cursor.execute(query)
         postings = [
             ModelData(
