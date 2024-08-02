@@ -170,7 +170,7 @@ WHERE url = ?
     new_urls = urls_from_api - active_urls - inactivate
 
     new_df = df[df["url"].isin(new_urls)]
-    new_df = new_df.dropna(subset=["tags"])
+    new_df = new_df.drop("tags", axis=1).drop_duplicates()
     if len(new_df) > 0:
         print(f"\t-> {len(new_df)} valid new postings have been found. Preparing for ingestion...")
 
@@ -200,17 +200,6 @@ WHERE url = ?
 
         del category_df
 
-        # Add the tags FK to the df...
-        tags_df = pd.read_sql("SELECT id, name FROM tags;", conn)
-
-        print("\t-> Getting [Job].[tags] FKs...")
-        new_df = new_df.rename(columns={"tags": "name"})
-        new_df = new_df.merge(tags_df, on="name", how="inner")
-        new_df = new_df.drop("name", axis=1)
-        new_df = new_df.rename(columns={"id": "tag_id"})
-
-        del tags_df
-
         # Add timestamps...
         utc_now = datetime.now(timezone.utc)
         new_df["active_date_utc"] = utc_now.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -220,12 +209,7 @@ WHERE url = ?
 
         # Final cleaning of the df
         new_df = new_df.drop("logo", axis=1)
-        new_df = new_df.rename(
-            columns={
-                "url": "url",
-                "date_published": "publish_date",
-            }
-        )
+        new_df = new_df.rename(columns={"date_published": "publish_date",})
         new_df.fillna(value="None", inplace=True)
 
         # Add a temporary ID for processing
@@ -279,7 +263,6 @@ WHERE url = ?
         conn.commit()
     else:
         print("\t->No new posting records.")
-    print("db ingestion complete.")
     return
 
 
@@ -322,4 +305,6 @@ def db_ingestion(df: pd.DataFrame, db_filename: str = "Job.db") -> None:
 
         print(f"Upserting [{db_filename.split('.')[0]}].[postings] table...")
         upsert_new_postings(df, jobs_conn)
+
+        print("db ingestion complete.")
     return
