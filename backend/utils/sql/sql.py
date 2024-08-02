@@ -20,6 +20,19 @@ class MultipleRecordsFound(Exception):
         return f"{self.message}"
 
 
+class NoRecordsFound(Exception):
+    """Exception raised when a query returns no results."""
+
+    def __init__(self, expected, actual, message="No records found"):
+        self.expected = expected
+        self.actual = actual
+        self.message = f"{message}: Expected {expected}, found {actual}"
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f"{self.message}"
+
+
 def insert_new_sources(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
     """Adds new sources to the sources table with new PK
 

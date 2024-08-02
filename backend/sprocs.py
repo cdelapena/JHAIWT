@@ -4,7 +4,7 @@ import time
 import sqlite3
 
 from utils.sql.models import JobPosting, ModelData, JobCategory, JobTag
-from utils.sql.sql import MultipleRecordsFound
+from utils.sql.sql import MultipleRecordsFound, NoRecordsFound
 
 
 def get_connection(db_filename) -> sqlite3.Connection:
@@ -64,7 +64,7 @@ def get_all_job_postings(db_filename: str) -> list:
                     JOIN postingtags pt ON pt.posting_id = p.id
                     JOIN tags t ON t.id = pt.tag_id
                     JOIN categories c ON c.id = p.category_id
-                WHERE p.inactive_date_utc IS NOT NULL
+                WHERE p.inactive_date_utc = 'None'
                 GROUP BY
                 p.id,
                 title,
@@ -134,7 +134,7 @@ def get_some_job_postings(db_filename: str, number: int) -> list:
                     JOIN postingtags pt ON pt.posting_id = p.id
                     JOIN tags t ON t.id = pt.tag_id
                     JOIN categories c ON c.id = p.category_id
-                WHERE p.inactive_date_utc IS NOT NULL
+                WHERE p.inactive_date_utc = 'None'
                 GROUP BY
                 p.id,
                 title,
@@ -201,7 +201,7 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
                     JOIN postingtags pt ON pt.posting_id = p.id
                     JOIN tags t ON t.id = pt.tag_id
                     JOIN categories c ON c.id = p.category_id
-                WHERE p.inactive_date_utc IS NOT NULL
+                WHERE p.inactive_date_utc = 'None'
                     AND p.id = {job_id}
                 GROUP BY
                 p.id,
@@ -241,7 +241,7 @@ def get_job_posting(job_id: int, db_filename: str) -> list:
         if (n := len(result)) > 1:
             raise MultipleRecordsFound(expected=1, actual=n)
         elif n == 0:
-            return None
+            raise NoRecordsFound(expected=1, actual=0)
         return result[0]
 
 
@@ -267,7 +267,7 @@ def get_model_data_by_category(category_id: int, db_filename: str) -> list:
                 JOIN postings p ON P.category_id = c.id
                 JOIN postingtags pt ON pt.posting_id = p.id
                 JOIN tags t ON t.id = pt.tag_id
-            WHERE p.inactive_date_utc IS NOT NULL
+            WHERE p.inactive_date_utc = 'None'
                 AND c.id = {category_id}
             GROUP BY
             p.id,
