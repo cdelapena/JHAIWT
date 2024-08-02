@@ -74,12 +74,8 @@ const InputForm = () => {
         numberOfSearchResults: `${formik.values.numberOfSearchResults.toString()}`,
       });
 
-      try {
-        await axios.post(`${baseBackendUrl}/api/job/results`, values);
-        navigate("/results");
-      } catch (error) {
-        console.error("Error submitting form data", error);
-      }
+      
+      navigate("/results");
     },
   });
 
