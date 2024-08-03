@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-
 import {
   Button,
   FormControl,
@@ -12,12 +11,12 @@ import {
   RadioGroup,
   Select,
   TextField,
+  Chip,
+  Autocomplete,
 } from "@mui/material";
-
 import { useFormik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
-
 import "./InputForm.css";
 import {
   NumberOfSearchResultsOptions,
@@ -27,8 +26,6 @@ import { useContext, useEffect, useState } from "react";
 import { SearchContext } from "../../../shared/contexts";
 import { baseBackendUrl } from "../../../shared/urls";
 
-// schema: https://github.com/jquense/yup?tab=readme-ov-file#stringurlmessage-string--function-schema
-
 const validationSchema = yup.object({
   industryCategory: yup.string().required("Industry Category is required"),
   yearsOfExperience: yup
@@ -36,7 +33,11 @@ const validationSchema = yup.object({
     .integer("Please enter a number")
     .required("Years of experience is required"),
   city: yup.string().required("City is required"),
-  relevantSkills: yup.string().required("Relevant skills are required"),
+  relevantSkills: yup
+    .array()
+    .of(yup.string())
+    .min(1, "Relevant skills are required")
+    .required("Relevant skills are required"),
   academicCredentials: yup
     .string()
     .required("Academic credentials are required"),
@@ -51,27 +52,29 @@ const InputForm = () => {
   const [jobs, setJobs] = useState<JobCategoryInterface[]>([
     { id: 0, name: "API Unavailable" },
   ]);
+  const [skills, setSkills] = useState<string[]>([]);
 
   const formik = useFormik({
     initialValues: {
       industryCategory: "",
       yearsOfExperience: "",
       city: "",
-      relevantSkills: "",
+      relevantSkills: [] as string[],
       academicCredentials: "",
       numberOfSearchResults: NumberOfSearchResultsOptions.Option1,
     },
     validationSchema: validationSchema,
-    onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
+    onSubmit: async (values) => {
       setSearchValues({
         industryCategory: formik.values.industryCategory,
         yearsOfExperience: formik.values.yearsOfExperience,
         city: formik.values.city,
-        relevantSkills: formik.values.relevantSkills,
+        relevantSkills: formik.values.relevantSkills.join(", "),
         academicCredentials: formik.values.academicCredentials,
         numberOfSearchResults: `${formik.values.numberOfSearchResults.toString()}`,
       });
+
+      
       navigate("/results");
     },
   });
@@ -97,7 +100,31 @@ const InputForm = () => {
 
   useEffect(() => {
     fetchData();
+    fetchTags();
   }, []);
+
+  const fetchTags = async () => {
+    await axios({
+      method: "GET",
+      url: `/api/tag`,
+      baseURL: baseBackendUrl,
+    })
+      .then((response) => {
+        const res = response.data.map((tag: { name: string }) => tag.name);
+        setSkills(res);
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
+  };
+
+  const handleRelevantSkillsChange = (event: any, value: string[]) => {
+    formik.setFieldValue("relevantSkills", value);
+  };
 
   return (
     <div className="input-form-container">
@@ -122,7 +149,6 @@ const InputForm = () => {
             value={formik.values.industryCategory}
             label="Industry Category"
             onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
             error={
               formik.touched.industryCategory &&
               Boolean(formik.errors.industryCategory)
@@ -147,7 +173,6 @@ const InputForm = () => {
           type="number"
           value={formik.values.yearsOfExperience}
           onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
           error={
             formik.touched.yearsOfExperience &&
             Boolean(formik.errors.yearsOfExperience)
@@ -163,26 +188,47 @@ const InputForm = () => {
           label="City"
           value={formik.values.city}
           onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
           error={formik.touched.city && Boolean(formik.errors.city)}
           helperText={formik.touched.city && formik.errors.city}
         />
-        <TextField
-          id="relevantSkills"
+        <FormControl
           className="input-form"
-          name="relevantSkills"
-          label="Relevant Skills"
-          value={formik.values.relevantSkills}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
           error={
             formik.touched.relevantSkills &&
             Boolean(formik.errors.relevantSkills)
           }
-          helperText={
-            formik.touched.relevantSkills && formik.errors.relevantSkills
-          }
-        />
+        >
+          <Autocomplete
+            multiple
+            id="tags-outlined"
+            options={skills}
+            getOptionLabel={(option) => option}
+            value={formik.values.relevantSkills}
+            onChange={handleRelevantSkillsChange}
+            filterSelectedOptions
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                label="Relevant Skills"
+                placeholder="Select Skills"
+                name="relevantSkills"
+              />
+            )}
+            renderTags={(value: string[], getTagProps) =>
+              value.map((option: string, index: number) => (
+                <Chip
+                  variant="outlined"
+                  label={option}
+                  {...getTagProps({ index })}
+                />
+              ))
+            }
+          />
+          <FormHelperText>
+            {formik.touched.relevantSkills && formik.errors.relevantSkills}
+          </FormHelperText>
+        </FormControl>
         <TextField
           id="academicCredentials"
           className="input-form"
@@ -190,7 +236,6 @@ const InputForm = () => {
           label="Academic Credentials"
           value={formik.values.academicCredentials}
           onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
           error={
             formik.touched.academicCredentials &&
             Boolean(formik.errors.academicCredentials)
@@ -209,7 +254,6 @@ const InputForm = () => {
             name="numberOfSearchResults"
             sx={{ justifyContent: "center" }}
             onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
             value={formik.values.numberOfSearchResults}
           >
             <FormControlLabel

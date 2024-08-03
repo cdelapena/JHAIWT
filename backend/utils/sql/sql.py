@@ -20,6 +20,19 @@ class MultipleRecordsFound(Exception):
         return f"{self.message}"
 
 
+class NoRecordsFound(Exception):
+    """Exception raised when a query returns no results."""
+
+    def __init__(self, expected, actual, message="No records found"):
+        self.expected = expected
+        self.actual = actual
+        self.message = f"{message}: Expected {expected}, found {actual}"
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f"{self.message}"
+
+
 def insert_new_sources(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
     """Adds new sources to the sources table with new PK
 
@@ -170,7 +183,9 @@ WHERE url = ?
     new_urls = urls_from_api - active_urls - inactivate
 
     new_df = df[df["url"].isin(new_urls)]
-    new_df = new_df.dropna(subset=["tags"])
+    posting_tag_df = new_df[["url", "tags"]].copy() # Save for a bit...
+
+    new_df = new_df.drop("tags", axis=1).drop_duplicates()
     if len(new_df) > 0:
         print(f"\t-> {len(new_df)} valid new postings have been found. Preparing for ingestion...")
 
@@ -200,17 +215,6 @@ WHERE url = ?
 
         del category_df
 
-        # Add the tags FK to the df...
-        tags_df = pd.read_sql("SELECT id, name FROM tags;", conn)
-
-        print("\t-> Getting [Job].[tags] FKs...")
-        new_df = new_df.rename(columns={"tags": "name"})
-        new_df = new_df.merge(tags_df, on="name", how="inner")
-        new_df = new_df.drop("name", axis=1)
-        new_df = new_df.rename(columns={"id": "tag_id"})
-
-        del tags_df
-
         # Add timestamps...
         utc_now = datetime.now(timezone.utc)
         new_df["active_date_utc"] = utc_now.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -220,12 +224,7 @@ WHERE url = ?
 
         # Final cleaning of the df
         new_df = new_df.drop("logo", axis=1)
-        new_df = new_df.rename(
-            columns={
-                "url": "url",
-                "date_published": "publish_date",
-            }
-        )
+        new_df = new_df.rename(columns={"date_published": "publish_date",})
         new_df.fillna(value="None", inplace=True)
 
         # Add a temporary ID for processing
@@ -277,18 +276,48 @@ WHERE url = ?
         cursor = conn.cursor()
         cursor.executemany(sql, postings)
         conn.commit()
+
+        # M-2-M postings <-> tags insertion...
+        insert_posting_tags(posting_tag_df, conn)
     else:
         print("\t->No new posting records.")
-    print("db ingestion complete.")
+    return
+
+
+def insert_posting_tags(df: pd.DataFrame, conn: sqlite3.Connection) -> None:
+    """Inserts new records into intersection table for M-2-M postings <-> tags
+
+    Args:
+        df (pd.DataFrame): new postings ONLY
+        conn (sqlite3.Connection): inject dependency
+    """
+    # Gather posting.id for new postings
+    db_postings = pd.read_sql("SELECT id, url FROM postings WHERE inactive_date_utc = 'None' GROUP BY id, url", conn)
+    posting_tag_df = df[["url", "tags"]].copy()
+    posting_tag_df = posting_tag_df.merge(db_postings, on=["url"], how="inner")
+    posting_tag_df = posting_tag_df.drop("url", axis=1)
+    posting_tag_df = posting_tag_df.rename(columns={"id": "posting_id"})
+
+    # Gather tag.id for new postings
+    db_tags = pd.read_sql("SELECT id, name FROM tags GROUP BY id, name", conn)
+    db_tags = db_tags.rename(columns={"name": "tags"})
+    posting_tag_df = posting_tag_df.merge(db_tags, on=["tags"], how="inner")
+    posting_tag_df = posting_tag_df.drop("tags", axis=1)
+    posting_tag_df = posting_tag_df.rename(columns={"id": "tag_id"})
+
+
+    print(f"\t-> Inserting {len(posting_tag_df)} record(s) into [Job].[postingtags]...")
+    posting_tag_df.to_sql("postingtags", conn, if_exists="append", index=False)
+    conn.commit()
     return
 
 
 def db_ingestion(df: pd.DataFrame, db_filename: str = "Job.db") -> None:
-    """_summary_
+    """Ingests records from API call into SQLite database
 
     Args:
-        df (pd.DataFrame): _description_
-        db_filename (str, optional): _description_. Defaults to "Job.db".
+        df (pd.DataFrame): data from API call
+        db_filename (str, optional): SQLite db file name. Defaults to "Job.db".
     """
     # Get the absolute path to Job.db
     db_file = str(Path.cwd().resolve().joinpath("data").joinpath(f"{db_filename}"))
@@ -322,4 +351,6 @@ def db_ingestion(df: pd.DataFrame, db_filename: str = "Job.db") -> None:
 
         print(f"Upserting [{db_filename.split('.')[0]}].[postings] table...")
         upsert_new_postings(df, jobs_conn)
+
+        print("db ingestion complete.")
     return

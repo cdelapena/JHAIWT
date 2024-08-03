@@ -1,13 +1,17 @@
 import sys
+<<<<<<< HEAD
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask, make_response, jsonify
+=======
+from flask import Flask, make_response, jsonify, request
+>>>>>>> origin
 from flask_cors import CORS, cross_origin
 from fetch_external_data import return_clean_json_data
 import sprocs
 import jobs_ingestion
 from utils.data_cleaning.text_preprocessing import preprocess_text
-from utils.sql.sql import MultipleRecordsFound
+from utils.sql.sql import MultipleRecordsFound, NoRecordsFound
 
 
 app = Flask(__name__)
@@ -35,6 +39,18 @@ def get_all_jobs():
 
 
 @cross_origin()
+@app.route("/api/job/results", methods=["POST"])
+def get_filtered_jobs():
+    data = request.get_json()
+    print(f"POST /api/job/results with data: {data}")
+    # Still need to figure out how to pass to model
+    # response = sprocs.get_filtered_job_postings("Job.db", data)
+    response = {"message": "Filtered jobs based on relevant skills"}
+    print("SUCCESS")
+    return jsonify(response)
+
+
+@cross_origin()
 @app.route("/api/job/results/<int:number>", methods=["GET", "POST"])
 def get_some_jobs(number):
     print(f"GET /api/job/results/{number}")
@@ -53,7 +69,10 @@ def get_job(job_id):
         return jsonify(response)
     except MultipleRecordsFound as e:
         print(f"Failed to fetch job {job_id}: {e}")
-        return make_response("No content found", 409)
+        return make_response("Multiple choices", 300)
+    except NoRecordsFound as e:
+        print(f"Failed to fetch job {job_id}: {e}")
+        return make_response("No content found", 404)
 
 
 @cross_origin()

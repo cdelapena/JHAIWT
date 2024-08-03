@@ -14,21 +14,14 @@ def init_tables(conn: sqlite3.Connection) -> None:
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS sources (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT
+        name TEXT NOT NULL
     )
     """)
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT
-    )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS tags (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT
+        name TEXT NOT NULL UNIQUE
     )
     """)
 
@@ -37,7 +30,6 @@ def init_tables(conn: sqlite3.Connection) -> None:
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     source_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
-    tag_id INTEGER,
     company_name TEXT,
     title TEXT,
     description TEXT,
@@ -50,8 +42,25 @@ def init_tables(conn: sqlite3.Connection) -> None:
     active_date_utc TEXT,
     inactive_date_utc TEXT,
     FOREIGN KEY (source_id) REFERENCES sources (id) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL ON UPDATE CASCADE
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS tags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS postingtags (
+    posting_id INTEGER,
+    tag_id INTEGER,
+    PRIMARY KEY (posting_id, tag_id),
+    FOREIGN KEY (posting_id) REFERENCES postings (id),
     FOREIGN KEY (tag_id) REFERENCES tags (id)
     )
-""")
+    """)
+
     return
