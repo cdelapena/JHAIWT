@@ -2,7 +2,7 @@ import sys
 <<<<<<< HEAD
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from flask import Flask, make_response, jsonify
+from flask import Flask, make_response, jsonify, request
 =======
 from flask import Flask, make_response, jsonify, request
 >>>>>>> origin
@@ -34,6 +34,18 @@ def home():
 def get_all_jobs():
     print("GET /api/job")
     response = sprocs.get_all_job_postings("Job.db")
+    print("SUCCESS")
+    return jsonify(response)
+
+
+@cross_origin()
+@app.route("/api/job/results", methods=["POST"])
+def get_filtered_jobs():
+    data = request.get_json()
+    print(f"POST /api/job/results with data: {data}")
+    # Still need to figure out how to pass to model
+    # response = sprocs.get_filtered_job_postings("Job.db", data)
+    response = {"message": "Filtered jobs based on relevant skills"}
     print("SUCCESS")
     return jsonify(response)
 
