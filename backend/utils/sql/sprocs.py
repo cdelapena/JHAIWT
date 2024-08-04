@@ -1,7 +1,8 @@
-from pathlib import Path
 from datetime import datetime, timezone
-import time
+from pathlib import Path
 import sqlite3
+import time
+from typing import List
 
 from utils.sql.models import JobPosting, ModelData, JobCategory, JobTag
 from utils.sql.sql import MultipleRecordsFound, NoRecordsFound
@@ -295,6 +296,79 @@ def get_model_data_by_category(category_id: int, db_filename: str) -> list:
 
     print(f"getModelDataByCategory returned {len(postings)} records.")
     return postings
+
+
+@timer
+def get_recommended_job_postings(job_ids: List[int], db_filename: str) -> list:
+    """Gets all recommended job postings
+
+    Args:
+        job_ids (List[int]): [[Job.db].[postings].id, ...]
+        db_filename (str): db for connection
+
+    Returns:
+        list: db records [id, title, description, category, company, salary, tags, job_type, url, publish_date, candidate_required_location]
+    """
+    cast_to_string = [f"{i}" for i in job_ids]
+    job_ids_str = ",".join(cast_to_string)
+
+    query = f"""
+            SELECT
+                p.id,
+                title,
+                description,
+                c.name,
+                company_name,
+                salary,
+                GROUP_CONCAT(t.name, ', ') AS tags,
+                job_type,
+                url,
+                publish_date,
+                candidate_required_location
+                FROM postings p
+                    JOIN postingtags pt ON pt.posting_id = p.id
+                    JOIN tags t ON t.id = pt.tag_id
+                    JOIN categories c ON c.id = p.category_id
+                WHERE p.inactive_date_utc = 'None'
+                    AND p.id IN ({job_ids_str})
+                GROUP BY
+                p.id,
+                title,
+                description,
+                c.name,
+                company_name,
+                salary,
+                job_type,
+                url,
+                publish_date,
+                candidate_required_location
+            """
+
+    print("Getting connection to db...")
+    conn = get_connection(db_filename)
+    with conn:
+        cursor = conn.cursor()
+        cursor.execute(query)
+        result = [
+            JobPosting(
+                id=row[0],
+                title=row[1],
+                description=row[2],
+                category=row[3],
+                company_name=row[4],
+                salary=row[5],
+                tags=row[6],
+                job_type=row[7],
+                url=row[8],
+                publish_date=row[9],
+                candidate_required_location=row[10],
+            )
+            for row in cursor.fetchall()
+        ]
+
+        if len(result) == 0:
+            raise NoRecordsFound(expected=1, actual=0)
+        return result
 
 
 @timer
