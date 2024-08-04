@@ -4,10 +4,11 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask, make_response, jsonify, request
 from flask_cors import CORS, cross_origin
 from fetch_external_data import return_clean_json_data
-import sprocs
+import utils.sql.sprocs as sprocs
 import jobs_ingestion
 from utils.data_cleaning.text_preprocessing import preprocess_text
 from utils.sql.sql import MultipleRecordsFound, NoRecordsFound
+from model import recommendation_engine_v001
 
 
 app = Flask(__name__)
@@ -100,6 +101,21 @@ def get_all_categories():
     print("SUCCESS")
     return jsonify(response)
 
+
+@cross_origin
+@app.route("/api/recommendation_engine", methods=["GET"])
+def get_recommendation():
+    print("GET /api/recommendation_engine")
+
+    # TODO This is hardwired just for testing
+    #   Will need pass-through user_text, category_id, and requested quantity of results
+    test_text = "I leverage expertise in molecular biology and computer science to provide program solutions and data insights to our molecular geneticists. My goal is to join in the transformation of precision medicine by delivering robust laboratory results."
+    engine_results = recommendation_engine_v001.main(user_text=test_text, category_id=6, req_quant=15)
+
+    # Gather job postings from engine_results
+    response = sprocs.get_recommended_job_postings(engine_results, "Job.db")
+    print("SUCCESS")
+    return jsonify(response)
 
 if __name__ == "__main__":
     # Set-up db at Flask initialization
