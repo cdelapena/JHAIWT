@@ -17,7 +17,6 @@ import {
   IconButton,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
@@ -64,6 +63,7 @@ const InputForm = () => {
     { id: 0, name: "API Unavailable" },
   ]);
   const [skills, setSkills] = useState<string[]>([]);
+  const [open, setOpen] = useState(false); // Added open state
 
   const formik = useFormik({
     initialValues: {
@@ -77,7 +77,6 @@ const InputForm = () => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-    onSubmit: async (values) => {
       setSearchValues({
         industryCategory: formik.values.industryCategory,
         yearsOfExperience: formik.values.yearsOfExperience,
@@ -87,9 +86,8 @@ const InputForm = () => {
         userText: formik.values.userText,
         numberOfSearchResults: `${formik.values.numberOfSearchResults.toString()}`,
       });
-  try {
-        await axios.post(`${baseBackendUrl}/api/job/results`, values);
-        try {
+  
+      try {
         await axios.post(`${baseBackendUrl}/api/job/results`, values);
         navigate("/results");
       } catch (error) {
@@ -148,22 +146,8 @@ const InputForm = () => {
     fetchTags();
   }, []);
 
-  useEffect(() => {
-    fetchTags();
-  }, []);
-
-  const handleRelevantSkillsChange = (event: any) => {
-    const {
-      target: { value },
-    } = event;
-    formik.setFieldValue("relevantSkills", typeof value === "string" ? value.split(",") : value);
-    setOpen(false);
-  };
-
-
-  const handleDropdownIconClick = (event: any) => {
-    event.stopPropagation();
-    setOpen(!open);
+  const handleRelevantSkillsChange = (event: any, value: string[]) => {
+    formik.setFieldValue("relevantSkills", value);
   };
 
   const handleDropdownIconClick = (event: any) => {
@@ -172,7 +156,6 @@ const InputForm = () => {
   };
 
   return (
-    <div className="input-form-container">
     <div className="input-form-container">
       <form onSubmit={formik.handleSubmit}>
         <FormControl className="input-form" id="industryCategoryFormControl">
@@ -362,7 +345,6 @@ const InputForm = () => {
           Search
         </Button>
       </form>
-    </div>
     </div>
   );
 };
