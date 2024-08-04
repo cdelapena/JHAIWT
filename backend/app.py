@@ -36,7 +36,7 @@ def get_all_jobs():
 
 
 @cross_origin()
-@app.route("/api/job/results", methods=["POST"])
+@app.route("/api/job/results", methods=["POST"], endpoint="get_filtered_jobs")
 def get_filtered_jobs():
     data = request.get_json()
     print(f"POST /api/job/results with data: {data}")
@@ -48,19 +48,7 @@ def get_filtered_jobs():
 
 
 @cross_origin()
-@app.route("/api/job/results", methods=["POST"])
-def get_filtered_jobs():
-    data = request.get_json()
-    print(f"POST /api/job/results with data: {data}")
-    # Still need to figure out how to pass to model
-    # response = sprocs.get_filtered_job_postings("Job.db", data)
-    response = {"message": "Filtered jobs based on relevant skills"}
-    print("SUCCESS")
-    return jsonify(response)
-
-
-@cross_origin()
-@app.route("/api/job/results/<int:number>", methods=["GET", "POST"])
+@app.route("/api/job/results/<int:number>", methods=["GET", "POST"], endpoint="get_some_jobs")
 def get_some_jobs(number):
     print(f"GET /api/job/results/{number}")
     response = sprocs.get_some_job_postings("Job.db", number)
@@ -118,7 +106,6 @@ def get_recommendation():
     return jsonify(response)
 
 if __name__ == "__main__":
-    # Set-up db at Flask initialization
     try:
         jobs_ingestion.main()
     except RuntimeError as e:
