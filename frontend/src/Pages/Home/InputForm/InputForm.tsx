@@ -41,6 +41,14 @@ const validationSchema = yup.object({
   academicCredentials: yup
     .string()
     .required("Academic credentials are required"),
+  userText: yup
+    .string()
+    .required("User Text is required")
+    .test(
+      "word-length",
+      "Must be less than or equal to 300 words",
+      (text) => text.split(" ").length <= 300
+    ),
   numberOfSearchResults: yup
     .number()
     .required("Number of Search Results is required"),
@@ -61,6 +69,7 @@ const InputForm = () => {
       city: "",
       relevantSkills: [] as string[],
       academicCredentials: "",
+      userText: "",
       numberOfSearchResults: NumberOfSearchResultsOptions.Option1,
     },
     validationSchema: validationSchema,
@@ -71,10 +80,10 @@ const InputForm = () => {
         city: formik.values.city,
         relevantSkills: formik.values.relevantSkills.join(", "),
         academicCredentials: formik.values.academicCredentials,
+        userText: formik.values.userText,
         numberOfSearchResults: `${formik.values.numberOfSearchResults.toString()}`,
       });
 
-      
       navigate("/results");
     },
   });
@@ -209,6 +218,10 @@ const InputForm = () => {
             renderInput={(params) => (
               <TextField
                 {...params}
+                error={
+                  formik.touched.relevantSkills &&
+                  Boolean(formik.errors.relevantSkills)
+                }
                 variant="outlined"
                 label="Relevant Skills"
                 placeholder="Select Skills"
@@ -244,6 +257,19 @@ const InputForm = () => {
             formik.touched.academicCredentials &&
             formik.errors.academicCredentials
           }
+        />
+
+        <TextField
+          id="userText"
+          className="input-form"
+          multiline
+          name="userText"
+          label="Tell Us About Yourself (300 words or less)"
+          rows={4}
+          value={formik.values.userText}
+          onChange={formik.handleChange}
+          error={formik.touched.userText && Boolean(formik.errors.userText)}
+          helperText={formik.touched.userText && formik.errors.userText}
         />
 
         <FormControl component="fieldset" className="input-form">
