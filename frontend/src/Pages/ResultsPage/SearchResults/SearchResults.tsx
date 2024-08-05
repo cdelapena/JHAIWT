@@ -19,7 +19,8 @@ const SearchResults: FC = () => {
     const fetchData = async () => {
       await axios({
         method: "POST",
-        url: `/api/job/results/${searchValues.numberOfSearchResults}`,
+        url: `/api/recommendation_engine`,
+        headers: { "Content-Type": "application/json" },
         baseURL: baseBackendUrl,
         data: { searchValues },
       })

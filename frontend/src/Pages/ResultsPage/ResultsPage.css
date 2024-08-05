@@ -1,6 +1,13 @@
 .input-form {
-    text-align: center;
-    width: 20rem;
-    display: flex !important;
-    margin: 1rem auto !important;
+  text-align: center;
+  width: 20rem;
+  display: flex !important;
+}
+
+.results-container {
+  margin: 2rem 10rem;
+}
+
+.title {
+    margin-bottom: 2rem;
 }

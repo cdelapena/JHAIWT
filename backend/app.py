@@ -89,19 +89,34 @@ def get_all_categories():
 
 
 @cross_origin
-@app.route("/api/recommendation_engine", methods=["GET"])
+@app.route("/api/recommendation_engine", methods=["POST"])
 def get_recommendation():
-    print("GET /api/recommendation_engine")
-
+    print("POST /api/recommendation_engine")
+    body = request.json["searchValues"]
     # TODO This is hardwired just for testing
     #   Will need pass-through user_text, category_id, and requested quantity of results
-    test_text = "I leverage expertise in molecular biology and computer science to provide program solutions and data insights to our molecular geneticists. My goal is to join in the transformation of precision medicine by delivering robust laboratory results."
-    engine_results = recommendation_engine_v001.main(user_text=test_text, category_id=6, req_quant=15)
+    request_params = [
+        body["userText"],
+        str(body["yearsOfExperience"]),
+        "years of experience",
+        body["city"],
+        body["relevantSkills"],
+        body["academicCredentials"],
+    ]
+
+    test_text = " ".join(request_params)
+
+    engine_results = recommendation_engine_v001.main(
+        user_text=test_text,
+        category_id=int(body["industryCategory"]),
+        req_quant=int(body["numberOfSearchResults"]),
+    )
 
     # Gather job postings from engine_results
     response = sprocs.get_recommended_job_postings(engine_results, "Job.db")
     print("SUCCESS")
     return jsonify(response)
+
 
 if __name__ == "__main__":
     # Set-up db at Flask initialization
