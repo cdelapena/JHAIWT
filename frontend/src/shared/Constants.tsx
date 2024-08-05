@@ -1,3 +1,5 @@
+import { SearchInterface } from "./interfaces";
+
 export const sampleJsonResponse = {
   jobs: [
     {
@@ -109,11 +111,12 @@ export const sampleJsonResponse = {
   ],
 };
 
-export const initialSearchValues = {
+export const initialSearchValues: SearchInterface = {
   industryCategory: "",
   yearsOfExperience: "",
   city: "",
   relevantSkills: "",
   academicCredentials: "",
+  userText: "",
   numberOfSearchResults: "5",
 };

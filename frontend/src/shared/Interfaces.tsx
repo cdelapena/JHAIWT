@@ -21,6 +21,7 @@ export interface SearchInterface {
   city: string;
   relevantSkills: string;
   academicCredentials: string;
+  userText: string;
   numberOfSearchResults: string;
 }
 
