@@ -1,6 +1,7 @@
 import React from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import ToggleSwitch from "./ToggleSwitch/ToggleSwitch";
 
 const Navbar: React.FC = () => {
   return (
@@ -31,6 +32,7 @@ const Navbar: React.FC = () => {
           </RouterLink>
         </Typography>
         <Box sx={{ marginLeft: "auto" }}>
+          <ToggleSwitch />
           <Button color="inherit" component={RouterLink} to="/browse">
             Browse All
           </Button>
