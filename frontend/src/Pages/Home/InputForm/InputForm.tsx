@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
 import {
   Button,
   FormControl,
@@ -22,7 +23,6 @@ import {
   NumberOfSearchResultsOptions,
   JobCategoryInterface,
 } from "./InputFormHelper";
-import { useContext, useEffect, useState } from "react";
 import { SearchContext } from "../../../shared/contexts";
 import { baseBackendUrl } from "../../../shared/urls";
 
