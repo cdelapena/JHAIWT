@@ -1,12 +1,19 @@
-import React from 'react';
-import SearchResults from './SearchResults/SearchResults';
+import React from "react";
+import SearchResults from "./SearchResults/SearchResults";
+import { Button } from "@mui/material";
+
+import "./ResultsPage.css";
 
 const ResultsPage: React.FC = () => {
   return (
     <>
-      <h1 className="title">Results</h1>
-      <br />
-      <SearchResults />
+      <div className="results-container">
+        <Button variant="outlined" href="/">
+          Back to Search
+        </Button>
+        <h1 className="title">Results</h1>
+        <SearchResults />
+      </div>
     </>
   );
 };
