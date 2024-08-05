@@ -1,0 +1,13 @@
+
+runtime: python39
+service: backend-service
+instance_class: F2
+
+env_variables:
+  FLASK_ENV: production
+
+entrypoint: gunicorn -b :$PORT app:app
+
+handlers:
+- url: /.*
+  script: auto
