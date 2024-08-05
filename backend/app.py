@@ -1,4 +1,6 @@
 import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask, make_response, jsonify, request
 from flask_cors import CORS, cross_origin
 from fetch_external_data import return_clean_json_data
@@ -34,7 +36,7 @@ def get_all_jobs():
 
 
 @cross_origin()
-@app.route("/api/job/results", methods=["POST"])
+@app.route("/api/job/results", methods=["POST"], endpoint="get_filtered_jobs")
 def get_filtered_jobs():
     data = request.get_json()
     print(f"POST /api/job/results with data: {data}")
@@ -46,7 +48,7 @@ def get_filtered_jobs():
 
 
 @cross_origin()
-@app.route("/api/job/results/<int:number>", methods=["GET", "POST"])
+@app.route("/api/job/results/<int:number>", methods=["GET", "POST"], endpoint="get_some_jobs")
 def get_some_jobs(number):
     print(f"GET /api/job/results/{number}")
     response = sprocs.get_some_job_postings("Job.db", number)
@@ -104,11 +106,10 @@ def get_recommendation():
     return jsonify(response)
 
 if __name__ == "__main__":
-    # Set-up db at Flask initialization
     try:
         jobs_ingestion.main()
     except RuntimeError as e:
         err = f"ERROR: {e}"
         sys.exit()
 
-    app.run(port=8080)
+    app.run(host='0.0.0.0', port=8080)
