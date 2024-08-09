@@ -27,6 +27,7 @@ import {
 } from "./InputFormHelper";
 import { SearchContext } from "../../../shared/contexts";
 import { baseBackendUrl } from "../../../shared/urls";
+import { SelectChangeEvent } from "@mui/material";
 
 const validationSchema = yup.object({
   industryCategory: yup.string().required("Industry Category is required"),
@@ -143,8 +144,11 @@ const InputForm = () => {
     fetchTags();
   }, []);
 
-  const handleRelevantSkillsChange = (event: any, value: string[]) => {
-    formik.setFieldValue("relevantSkills", value);
+  const handleRelevantSkillsChange = (
+    event: SelectChangeEvent<string[]>
+  ) => {
+    const { value } = event.target;
+    formik.setFieldValue("relevantSkills", value as string[]);
   };
 
   const handleDropdownIconClick = (event: any) => {
@@ -226,46 +230,46 @@ const InputForm = () => {
         >
           <InputLabel id="relevantSkillsLabel">Relevant Skills</InputLabel>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Select
-              labelId="relevantSkillsLabel"
-              id="relevantSkillsSelect"
-              multiple
-              open={open}
-              onClose={() => setOpen(false)}
-              value={formik.values.relevantSkills}
-              onChange={handleRelevantSkillsChange}
-              onBlur={formik.handleBlur}
-              renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {(selected as string[]).map((value) => (
-                    <Chip
-                      key={value}
-                      label={value}
-                      onDelete={(event) => {
-                        event.stopPropagation();
-                        formik.setFieldValue(
-                          "relevantSkills",
-                          formik.values.relevantSkills.filter((skill) => skill !== value)
-                        );
-                      }}
-                      sx={{ margin: 0.5 }}
-                    />
-                  ))}
-                </Box>
-              )}
-              IconComponent={() => (
-                <IconButton onClick={handleDropdownIconClick} sx={{ padding: 0 }}>
-                  <ArrowDropDownIcon />
-                </IconButton>
-              )}
-              sx={{ flex: 1 }}
-            >
-              {skills.map((skill) => (
-                <MenuItem key={skill} value={skill}>
-                  {skill}
-                </MenuItem>
-              ))}
-            </Select>
+          <Select
+            labelId="relevantSkillsLabel"
+            id="relevantSkillsSelect"
+            multiple
+            open={open}
+            onClose={() => setOpen(false)}
+            value={formik.values.relevantSkills}
+            onChange={handleRelevantSkillsChange} // Now using the correct type
+            onBlur={formik.handleBlur}
+            renderValue={(selected) => (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                {(selected as string[]).map((value) => (
+                  <Chip
+                    key={value}
+                    label={value}
+                    onDelete={(event) => {
+                      event.stopPropagation();
+                      formik.setFieldValue(
+                        "relevantSkills",
+                        formik.values.relevantSkills.filter((skill) => skill !== value)
+                      );
+                    }}
+                    sx={{ margin: 0.5 }}
+                  />
+                ))}
+              </Box>
+            )}
+            IconComponent={() => (
+              <IconButton onClick={handleDropdownIconClick} sx={{ padding: 0 }}>
+                <ArrowDropDownIcon />
+              </IconButton>
+            )}
+            sx={{ flex: 1 }}
+          >
+            {skills.map((skill) => (
+              <MenuItem key={skill} value={skill}>
+                {skill}
+              </MenuItem>
+            ))}
+          </Select>
           </Box>
           <FormHelperText>
             {formik.touched.relevantSkills && formik.errors.relevantSkills}
