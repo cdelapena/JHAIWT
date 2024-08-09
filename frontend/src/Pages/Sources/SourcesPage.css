@@ -14,16 +14,16 @@
     font-size: 1.5rem;
     margin-top: 30px;
     margin-bottom: 15px;
-    color: #fff;
+    color: #333 !important; /* Use !important to force override */
 }
 
 .sources-container p {
     margin-bottom: 15px;
-    color: #d1d1d1; /* Light grey text */
+    color: #333 !important; /* Force override of global styles */
 }
 
 .sources-container a {
-    color: #1e90ff; /* Bright blue links */
+    color: #1e90ff !important; /* Ensure link color is applied */
     text-decoration: none;
     font-weight: bold;
 }
@@ -35,11 +35,11 @@
 /* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
     .sources-container h2 {
-        color: #fff; /* White text for headers */
+        color: #fff; /* White text for headers in dark mode */
     }
 
     .sources-container p {
-        color: #ccc; /* Light grey text */
+        color: #ccc; /* Light grey text for dark mode */
     }
 
     .sources-container a {
