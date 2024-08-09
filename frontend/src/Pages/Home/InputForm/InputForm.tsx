@@ -93,9 +93,6 @@ const InputForm = () => {
       } catch (error) {
         console.error("Error submitting form data", error);
       }
-      } catch (error) {
-        console.error("Error submitting form data", error);
-      }
     },
   });
 
