@@ -14,6 +14,9 @@ import { SearchContext, ThemeContext } from "./shared/contexts";
 import Home from "./Pages/Home/Home";
 import ResultsPage from "./Pages/ResultsPage/ResultsPage";
 import BrowsePage from "./Pages/BrowsePage/BrowsePage";
+import FeaturesPage from "./Pages/Features/FeaturesPage";
+import AboutPage from "./Pages/About/AboutPage";
+import SourcesPage from "./Pages/Sources/SourcesPage";
 import { getDesignTokens } from "./shared/colorTheme";
 import Navbar from "./components/Navbar";
 import { initialSearchValues } from "./shared/constants";
@@ -60,6 +63,9 @@ const App: FC = () => {
               <Route path="/" element={<Home />} />
               <Route path="/results" element={<ResultsPage />} />
               <Route path="/browse" element={<BrowsePage />} />
+              <Route path="/features" element={<FeaturesPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/sources" element={<SourcesPage />} />
             </Routes>
           </BrowserRouter>
         </ThemeProvider>

@@ -1,5 +1,19 @@
 .browse-results-container {
-    margin: 0 auto;
-    max-width: 90%;
-  }
-  
+  margin: 0 auto;
+  max-width: 90%;
+}
+
+.filter-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px; 
+}
+
+.filter-container > * {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.filter-container > *:last-child {
+  margin-right: 0; 
+}

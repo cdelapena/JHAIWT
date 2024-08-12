@@ -12,6 +12,10 @@ import {
   Typography,
   TablePagination,
   TableSortLabel,
+  TextField,
+  Chip,
+  Autocomplete,
+  useTheme,
 } from "@mui/material";
 import { JobInterface } from "../../../shared/interfaces";
 import "./BrowseResults.css";
@@ -38,8 +42,17 @@ const BrowseResults: FC = () => {
   const [orderBy, setOrderBy] = useState<keyof JobInterface>("title");
   const [order, setOrder] = useState<Order>("asc");
 
+  const theme = useTheme();
+
+  const [filters, setFilters] = useState({
+    title: [] as string[],
+    companyName: [] as string[],
+    location: [] as string[],
+    category: [] as string[],
+    salary: [] as string[],
+  });
+
   useEffect(() => {
-    // Use the mock data instead of fetching from the API
     const fetchJobs = async () => {
       try {
         setLoading(true);
@@ -86,6 +99,38 @@ const BrowseResults: FC = () => {
     setOrderBy(property);
   };
 
+  const handleFilterChange = (name: keyof typeof filters, value: string[]) => {
+    setFilters({
+      ...filters,
+      [name]: value,
+    });
+  };
+
+  const filteredJobs = React.useMemo(() => {
+    return jobs.filter(
+      (job) =>
+        filters.title.every((filter) =>
+          job.title.toLowerCase().includes(filter.toLowerCase())
+        ) &&
+        filters.companyName.every((filter) =>
+          job.company_name.toLowerCase().includes(filter.toLowerCase())
+        ) &&
+        filters.location.every((filter) =>
+          job.candidate_required_location
+            .toLowerCase()
+            .includes(filter.toLowerCase())
+        ) &&
+        filters.category.every((filter) =>
+          job.category.toLowerCase().includes(filter.toLowerCase())
+        ) &&
+        filters.salary.every((filter) =>
+          job.salary
+            ? job.salary.toLowerCase().includes(filter.toLowerCase())
+            : true
+        )
+    );
+  }, [jobs, filters]);
+
   const sortedJobs = React.useMemo(() => {
     const comparator = (a: JobInterface, b: JobInterface) => {
       if (b[orderBy] < a[orderBy]) {
@@ -96,8 +141,8 @@ const BrowseResults: FC = () => {
       }
       return 0;
     };
-    return [...jobs].sort(comparator);
-  }, [jobs, order, orderBy]);
+    return [...filteredJobs].sort(comparator);
+  }, [filteredJobs, order, orderBy]);
 
   if (loading) {
     return <CircularProgress />;
@@ -109,6 +154,129 @@ const BrowseResults: FC = () => {
 
   return (
     <Paper className="browse-results-container">
+      <div
+        className="filter-container"
+        style={{
+          backgroundColor:
+            theme.palette.mode === "dark" ? "#666666" : "#dfebf7",
+        }}
+      >
+        <Autocomplete
+          multiple
+          options={[]}
+          freeSolo
+          value={filters.title}
+          onChange={(event: React.ChangeEvent<{}>, newValue: string[]) =>
+            handleFilterChange("title", newValue)
+          }
+          renderTags={(value: readonly string[], getTagProps) =>
+            value.map((option: string, index: number) => (
+              <Chip label={option} {...getTagProps({ index })} />
+            ))
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Filter by Title"
+              variant="outlined"
+              margin="normal"
+            />
+          )}
+        />
+
+        <Autocomplete
+          multiple
+          options={[]}
+          freeSolo
+          value={filters.companyName}
+          onChange={(event: React.ChangeEvent<{}>, newValue: string[]) =>
+            handleFilterChange("companyName", newValue)
+          }
+          renderTags={(value: readonly string[], getTagProps) =>
+            value.map((option: string, index: number) => (
+              <Chip label={option} {...getTagProps({ index })} />
+            ))
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Filter by Company"
+              variant="outlined"
+              margin="normal"
+            />
+          )}
+        />
+
+        <Autocomplete
+          multiple
+          options={[]}
+          freeSolo
+          value={filters.location}
+          onChange={(event: React.ChangeEvent<{}>, newValue: string[]) =>
+            handleFilterChange("location", newValue)
+          }
+          renderTags={(value: readonly string[], getTagProps) =>
+            value.map((option: string, index: number) => (
+              <Chip label={option} {...getTagProps({ index })} />
+            ))
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Filter by Location"
+              variant="outlined"
+              margin="normal"
+            />
+          )}
+        />
+
+        <Autocomplete
+          multiple
+          options={[]}
+          freeSolo
+          value={filters.category}
+          onChange={(event: React.ChangeEvent<{}>, newValue: string[]) =>
+            handleFilterChange("category", newValue)
+          }
+          renderTags={(value: readonly string[], getTagProps) =>
+            value.map((option: string, index: number) => (
+              <Chip label={option} {...getTagProps({ index })} />
+            ))
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Filter by Category"
+              variant="outlined"
+              margin="normal"
+            />
+          )}
+        />
+
+        <Autocomplete
+          multiple
+          options={[]}
+          freeSolo
+          value={filters.salary}
+          onChange={(event: React.ChangeEvent<{}>, newValue: string[]) =>
+            handleFilterChange("salary", newValue)
+          }
+          renderTags={(value: readonly string[], getTagProps) =>
+            value.map((option: string, index: number) => (
+              <Chip label={option} {...getTagProps({ index })} />
+            ))
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Filter by Salary"
+              variant="outlined"
+              margin="normal"
+            />
+          )}
+        />
+      </div>
+
       <TableContainer style={{ height: "70vh", overflow: "auto" }}>
         <Table stickyHeader>
           <TableHead>
@@ -116,14 +284,17 @@ const BrowseResults: FC = () => {
               {[
                 "title",
                 "company_name",
-                "candidate_required_location",
+                "location",
                 "category",
                 "salary",
+                "job_listing",
               ].map((column) => (
                 <TableCell
                   key={column}
-                  style={{
+                  sx={{
                     width: columnWidths[column as keyof typeof columnWidths],
+                    backgroundColor:
+                      theme.palette.mode === "dark" ? "#666666" : "#dfebf7",
                   }}
                 >
                   <TableSortLabel
@@ -140,9 +311,6 @@ const BrowseResults: FC = () => {
                   </TableSortLabel>
                 </TableCell>
               ))}
-              <TableCell style={{ width: columnWidths.action }}>
-                Action
-              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
