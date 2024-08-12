@@ -1,7 +1,6 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from flask import Flask, make_response, jsonify
 from flask import Flask, make_response, jsonify, request
 from flask_cors import CORS, cross_origin
 from fetch_external_data import return_clean_json_data
